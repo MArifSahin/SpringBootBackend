@@ -64,6 +64,14 @@ public class User {
     @JsonManagedReference
     private Set<ActiveSessions> activeSessions = new HashSet<>();;
 
+    @OneToMany(mappedBy = "user")
+    @JsonManagedReference
+    private Set<BookReview> bookReviews = new HashSet<>();
+
+    @OneToMany(mappedBy = "user")
+    @JsonManagedReference
+    private Set<MovieReview> movieReviews = new HashSet<>();
+
     public User() {
 
     }
