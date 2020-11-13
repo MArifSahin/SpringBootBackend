@@ -1,7 +1,7 @@
 databaseChangeLog:
   - include:
-      file: db/changelog/changes/database_version_001.sql
+      file: db/changelog/changes/database_version_000.sql
   - include:
-      file: db/changelog/changes/initialize_cloud_roles.sql
+      file: db/changelog/changes/initialize_cloud_roles_001.sql
   - include:
-      file: db/changelog/changes/initialize_email_templates.sql
+      file: db/changelog/changes/initialize_email_templates_001.sql

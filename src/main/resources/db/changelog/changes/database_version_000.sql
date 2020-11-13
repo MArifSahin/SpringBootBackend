@@ -68,26 +68,26 @@ create table if not exists "content_modes"
 
 create table if not exists "content_book"
 (
-    id             int primary key,
-    name           varchar,
-    published_year int,
-    author         varchar,
-    editor_score   int,
-    user_score     int,
-    mode_id        int not null references content_modes (id),
-    review_number  int
+    id                int primary key,
+    name              varchar,
+    editor_score      int,
+    user_score        int,
+    mode_id           int not null references content_modes (id),
+    review_number     int,
+    has_editor_review boolean,
+    has_user_review   boolean
 );
 
 create table if not exists "content_movie"
 (
-    id            int primary key,
-    name          varchar,
-    release_date  int,
-    director      varchar,
-    editor_score  int,
-    user_score    int,
-    mode_id       int not null references content_modes (id),
-    review_number int
+    id                int primary key,
+    name              varchar,
+    editor_score      int,
+    user_score        int,
+    mode_id           int not null references content_modes (id),
+    review_number     int,
+    has_editor_review boolean,
+    has_user_review   boolean
 );
 
 create table if not exists "movie_review"
@@ -95,6 +95,7 @@ create table if not exists "movie_review"
     id               int primary key,
     review_text      text,
     is_editor_review boolean,
+    score            int,
     review_date      timestamp without time zone NOT NULL,
     movie_id         int                         NOT NULL references content_movie (id),
     user_id          int                         NOT NULL references cloud_users (id)
@@ -105,6 +106,7 @@ create table if not exists "book_review"
     id               int primary key,
     review_text      text,
     is_editor_review boolean,
+    score            int,
     review_date      timestamp without time zone NOT NULL,
     book_id          int                         NOT NULL references content_book (id),
     user_id          int                         NOT NULL references cloud_users (id)

@@ -1,4 +1,50 @@
 insert into email_templates (template_name, content)
+VALUES ('db-editor_application_form_email',
+        '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+        <html lang="en" xmlns:th="https://thymeleaf.org">
+        <head>
+            <title>Sending Email with Thymeleaf HTML Template Example</title>
+            <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+            <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+            <link href=''http://fonts.googleapis.com/css?family=Roboto'' rel=''stylesheet'' type=''text/css''>
+            <style>
+                body {
+                    font-family: ''Roboto'', sans-serif;
+                    font-size: 24px;
+                }
+            </style>
+        </head>
+        <body style="margin: 0; padding: 0;">
+
+        <table align="center" border="0" cellpadding="0" cellspacing="0" width="600" style="border-collapse: collapse;">
+            <tr>
+                <td bgcolor="#eaeaea" style="padding: 40px 30px 40px 30px;">
+                    <p>Dear <span th:text="${name}"></span>,</p>
+                    <p>Editor application has been made. Please review and evaluate.</b></p>
+                    <ul>
+                        <li>Name : <span th:text="${name}"></span> <span th:text="${lastname}"></span></li>
+                        <li>Email:<span th:text="${email}"></span></li>
+                        <li>Phone Number: <span th:text="${phoneNumber}"></span></li>
+                        <li>Purpose of want to become editor: <span th:text="${whatDoYouWant}"></span></li>
+                        <li>Hobbies and Interests:  <span th:text="${hobbies}"></span></li>
+                        <li>Favorite Books: <span th:text="${favBooks}"></span></li>
+                        <li>Favorite Movies: <span th:text="${favMovies}"></span></li>
+                    </ul>
+                    <a th:href="${acceptUrl}"><span>Accept  </span></a>
+                    <a th:href="${rejectUrl}"><span>Reject</span></a>
+                </td>
+            </tr>
+            <tr>
+                <td bgcolor="#777777" style="padding: 30px 30px 30px 30px;">
+                    <p th:text="${signature}">${signature}</p>
+                    <p></p>
+                </td>
+            </tr>
+        </table>
+        </body>
+        </html>');
+
+insert into email_templates (template_name, content)
 VALUES ('db-verification_email',
 '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html lang="en" xmlns:th="https://thymeleaf.org">
