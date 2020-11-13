@@ -13,49 +13,61 @@ public class Book {
 
     @NotBlank
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "book_seq")
-    @SequenceGenerator(name = "book_seq", sequenceName = "book_seq", initialValue = 1, allocationSize = 100)
-    private Integer id;
+    private String id;
 
     @Column(name = "name")
     private String name;
 
     @Column(name = "published_year")
-    private int published_year;
+    private int publishedYear;
 
     @Column(name = "author")
     private String author;
 
     @Column(name = "editor_score")
-    private int editor_score;
+    private int editorScore;
 
     @Column(name = "user_score")
-    private int user_score;
+    private int userScore;
 
     @OneToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "mode_id", nullable = false)
     private Modes modes;
 
+    @Column(name = "has_editor_review")
+    private boolean hasEditorReview;
+
+    @Column(name = "has_user_review")
+    private boolean hasUserReview;
+
     @Column(name = "review_number")
-    private int review_number;
+    private int reviewNumber;
 
     @OneToMany(mappedBy = "book")
     @JsonManagedReference
     private Set<BookReview> bookReviews = new HashSet<>();
 
-    public Book(@NotBlank Integer id) {
-        this.id = id;
-    }
-
     public Book() {
 
     }
 
-    public Integer getId() {
+    public Book(@NotBlank String id, String name,int editorScore, int userScore, int reviewNumber) {
+        this.id = id;
+        this.name = name;
+        this.editorScore = editorScore;
+        this.userScore = userScore;
+        this.reviewNumber = reviewNumber;
+    }
+
+    public void addBookReview(BookReview bookReview) {
+        bookReviews.add(bookReview);
+    }
+
+    public String getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -67,12 +79,12 @@ public class Book {
         this.name = name;
     }
 
-    public int getPublished_year() {
-        return published_year;
+    public int getPublishedYear() {
+        return publishedYear;
     }
 
-    public void setPublished_year(int published_year) {
-        this.published_year = published_year;
+    public void setPublishedYear(int publishedYear) {
+        this.publishedYear = publishedYear;
     }
 
     public String getAuthor() {
@@ -83,20 +95,20 @@ public class Book {
         this.author = author;
     }
 
-    public int getEditor_score() {
-        return editor_score;
+    public int getEditorScore() {
+        return editorScore;
     }
 
-    public void setEditor_score(int editor_score) {
-        this.editor_score = editor_score;
+    public void setEditorScore(int editorScore) {
+        this.editorScore = editorScore;
     }
 
-    public int getUser_score() {
-        return user_score;
+    public int getUserScore() {
+        return userScore;
     }
 
-    public void setUser_score(int user_score) {
-        this.user_score = user_score;
+    public void setUserScore(int userScore) {
+        this.userScore = userScore;
     }
 
     public Modes getModes() {
@@ -107,13 +119,31 @@ public class Book {
         this.modes = modes;
     }
 
-    public int getReview_number() {
-        return review_number;
+    public boolean isHasEditorReview() {
+        return hasEditorReview;
     }
 
-    public void setReview_number(int review_number) {
-        this.review_number = review_number;
+    public void setHasEditorReview(boolean hasEditorReview) {
+        this.hasEditorReview = hasEditorReview;
     }
+
+    public int getReviewNumber() {
+        return reviewNumber;
+    }
+
+    public void setReviewNumber(int reviewNumber) {
+        this.reviewNumber = reviewNumber;
+    }
+
+    public boolean isHasUserReview() {
+        return hasUserReview;
+    }
+
+    public void setHasUserReview(boolean hasUserReview) {
+        this.hasUserReview = hasUserReview;
+    }
+
+
 
     public Set<BookReview> getBookReviews() {
         return bookReviews;

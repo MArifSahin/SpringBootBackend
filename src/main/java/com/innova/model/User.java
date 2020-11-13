@@ -21,7 +21,7 @@ public class User {
     @NotBlank
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "user_seq")
-    @SequenceGenerator(name = "user_seq", sequenceName = "user_seq", initialValue = 1, allocationSize = 100)
+    @SequenceGenerator(name = "user_seq", sequenceName = "user_seq", allocationSize = 100)
     private Integer id;
 
     @Size(min = 3, max = 50)
@@ -62,7 +62,8 @@ public class User {
 
     @OneToMany(mappedBy = "user")
     @JsonManagedReference
-    private Set<ActiveSessions> activeSessions = new HashSet<>();;
+    private Set<ActiveSessions> activeSessions = new HashSet<>();
+    ;
 
     @OneToMany(mappedBy = "user")
     @JsonManagedReference
@@ -80,16 +81,24 @@ public class User {
         this.id = id;
     }
 
-    public void addActiveSession(ActiveSessions activeSession){
+    public void addActiveSession(ActiveSessions activeSession) {
         activeSessions.add(activeSession);
     }
 
+    public void addBookReview(BookReview bookReview) {
+        bookReviews.add(bookReview);
+    }
 
-    public Set<ActiveSessions> getActiveSessions(){
+    public void addMovieReview(MovieReview movieReview) {
+        movieReviews.add(movieReview);
+    }
+
+
+    public Set<ActiveSessions> getActiveSessions() {
         return this.activeSessions;
     }
 
-    public void setActiveSessions(Set<ActiveSessions> activeSessions){
+    public void setActiveSessions(Set<ActiveSessions> activeSessions) {
         this.activeSessions = activeSessions;
     }
 

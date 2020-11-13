@@ -27,6 +27,9 @@ public class BookReview {
     @NotNull
     private LocalDateTime reviewDate;
 
+    @Column(name = "score")
+    private int score;
+
     @ManyToOne
     @JoinColumn(name = "book_id", nullable = false)
     @JsonBackReference
@@ -39,6 +42,15 @@ public class BookReview {
 
     public BookReview(@NotBlank Integer id) {
         this.id = id;
+    }
+
+    public BookReview(String reviewText, Boolean isEditorReview, @NotNull LocalDateTime reviewDate, int score, Book book, User user) {
+        this.reviewText = reviewText;
+        this.isEditorReview = isEditorReview;
+        this.reviewDate = reviewDate;
+        this.score = score;
+        this.book = book;
+        this.user = user;
     }
 
     public BookReview() {

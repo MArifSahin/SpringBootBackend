@@ -27,6 +27,9 @@ public class MovieReview {
     @NotNull
     private LocalDateTime reviewDate;
 
+    @Column(name = "score")
+    private int score;
+
     @ManyToOne
     @JoinColumn(name = "movie_id", nullable = false)
     @JsonBackReference

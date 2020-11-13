@@ -13,21 +13,19 @@ public class Movie {
 
     @NotBlank
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "book_seq")
-    @SequenceGenerator(name = "book_seq", sequenceName = "book_seq", initialValue = 1, allocationSize = 100)
-    private Integer id;
+    private String id;
 
     @Column(name = "name")
     private String name;
 
     @Column(name = "release_date")
-    private int release_date;
+    private int releaseDate;
 
     @Column(name = "director")
     private String director;
 
     @Column(name = "editor_score")
-    private int editor_score;
+    private int editorScore;
 
     @Column(name = "user_score")
     private int user_score;
@@ -37,25 +35,27 @@ public class Movie {
     private Modes modes;
 
     @Column(name = "review_number")
-    private int review_number;
+    private int reviewNumber;
+
+    @Column(name = "has_editor_review")
+    private int hasEditorReview;
+
+    @Column(name = "has_user_review")
+    private int hasUserReview;
 
     @OneToMany(mappedBy = "movie")
     @JsonManagedReference
     private Set<MovieReview> movieReviews = new HashSet<>();
 
-    public Movie(@NotBlank Integer id) {
-        this.id = id;
-    }
-
     public Movie() {
 
     }
 
-    public Integer getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -67,12 +67,12 @@ public class Movie {
         this.name = name;
     }
 
-    public int getRelease_date() {
-        return release_date;
+    public int getReleaseDate() {
+        return releaseDate;
     }
 
-    public void setRelease_date(int release_date) {
-        this.release_date = release_date;
+    public void setReleaseDate(int releaseDate) {
+        this.releaseDate = releaseDate;
     }
 
     public String getDirector() {
@@ -83,12 +83,12 @@ public class Movie {
         this.director = director;
     }
 
-    public int getEditor_score() {
-        return editor_score;
+    public int getEditorScore() {
+        return editorScore;
     }
 
-    public void setEditor_score(int editor_score) {
-        this.editor_score = editor_score;
+    public void setEditorScore(int editorScore) {
+        this.editorScore = editorScore;
     }
 
     public int getUser_score() {
@@ -107,19 +107,27 @@ public class Movie {
         this.modes = modes;
     }
 
-    public int getReview_number() {
-        return review_number;
+    public int getReviewNumber() {
+        return reviewNumber;
     }
 
-    public void setReview_number(int review_number) {
-        this.review_number = review_number;
+    public void setReviewNumber(int reviewNumber) {
+        this.reviewNumber = reviewNumber;
     }
 
-    public Set<MovieReview> getMovieReviews() {
-        return movieReviews;
+    public int getHasEditorReview() {
+        return hasEditorReview;
     }
 
-    public void setMovieReviews(Set<MovieReview> movieReviews) {
-        this.movieReviews = movieReviews;
+    public void setHasEditorReview(int hasEditorReview) {
+        this.hasEditorReview = hasEditorReview;
+    }
+
+    public int getHasUserReview() {
+        return hasUserReview;
+    }
+
+    public void setHasUserReview(int hasUserReview) {
+        this.hasUserReview = hasUserReview;
     }
 }
