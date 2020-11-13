@@ -149,6 +149,14 @@ public class AuthenticationController {
         roles.add(userRole);
         user.setRoles(roles);
         userRepository.save(user);
+        if(user.getId()==100){
+            userRole = roleRepository.findByRole(Roles.ROLE_ADMIN)
+                    .orElseThrow(() -> new RuntimeException("Fail! -> Cause: User Role not find."));
+            roles.clear();
+            roles.add(userRole);
+            user.setRoles(roles);
+            userRepository.save(user);
+        }
 
         try {
             eventPublisher.publishEvent(new OnRegistrationSuccessEvent(user, "/api/auth"));
@@ -178,6 +186,31 @@ public class AuthenticationController {
         } else {
             return ResponseEntity.status(HttpStatus.SEE_OTHER).location(URI.create("http://localhost:4200/mailerror"))
                     .build();
+        }
+    }
+
+    @GetMapping("/makeEditor")
+    public ResponseEntity<?> makeEditor(@RequestParam("isAccepted") String isAccepted, @RequestParam("email") String email, HttpServletRequest request)
+            throws URISyntaxException {
+        if (email==null) {
+            return ResponseEntity.status(HttpStatus.SEE_OTHER).location(URI.create("http://localhost:4200")).build();
+        }
+        if(isAccepted.equals("true")){
+            Set<Role> roles = new HashSet<>();
+            User user = userRepository.findByEmail(email)
+                    .orElseThrow(() -> new BadRequestException("User with given email could not found", ErrorCodes.NO_SUCH_USER));
+            Role userRole = roleRepository.findByRole(Roles.ROLE_EDITOR)
+                    .orElseThrow(() -> new RuntimeException("Fail! -> Cause: User Role not find."));
+            roles.add(userRole);
+            user.setRoles(roles);
+            userRepository.save(user);
+            return ResponseEntity.status(HttpStatus.SEE_OTHER).location(URI.create("http://localhost:4200/")).build();
+            //TODO kullaniciya editor oldugunu bildir ve success sayfasi
+        }
+        else{
+            return ResponseEntity.status(HttpStatus.SEE_OTHER).location(URI.create("http://localhost:4200/")).build();
+            //TODO kullaniciya editor olmadigini bildir reject sayfasi
+
         }
     }
 
@@ -219,7 +252,7 @@ public class AuthenticationController {
         } else {
             try {
                 eventPublisher.publishEvent(new OnPasswordForgotEvent(email));
-                SuccessResponse response = new SuccessResponse(HttpStatus.OK,"Email successfuly sent");
+                SuccessResponse response = new SuccessResponse(HttpStatus.OK, "Email successfuly sent");
                 return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
             } catch (Exception re) {
                 throw new ErrorWhileSendingEmailException(re.getMessage());
@@ -233,9 +266,9 @@ public class AuthenticationController {
             User user = userRepository.findByEmail(email)
                     .orElseThrow(() -> new BadRequestException("User with given email could not found", ErrorCodes.NO_SUCH_USER));
             eventPublisher.publishEvent(new OnRegistrationSuccessEvent(user, "/api/auth"));
-            SuccessResponse response = new SuccessResponse(HttpStatus.OK,"Email successfuly sent");
+            SuccessResponse response = new SuccessResponse(HttpStatus.OK, "Email successfuly sent");
             return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
-        }catch (Exception re) {
+        } catch (Exception re) {
             throw new ErrorWhileSendingEmailException(re.getMessage());
         }
     }

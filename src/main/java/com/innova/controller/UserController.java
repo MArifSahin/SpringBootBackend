@@ -1,19 +1,19 @@
 package com.innova.controller;
 
 import com.innova.constants.ErrorCodes;
-import com.innova.dto.request.ChangeForm;
-import com.innova.dto.request.ChangePasswordForm;
-import com.innova.dto.request.ForgotAndChangePasswordForm;
-import com.innova.dto.request.LogoutForm;
+import com.innova.dto.request.*;
 import com.innova.dto.response.SuccessResponse;
+import com.innova.event.OnEditorApplicationSuccessEvent;
 import com.innova.event.OnRegistrationSuccessEvent;
 import com.innova.exception.BadRequestException;
 import com.innova.exception.ErrorWhileSendingEmailException;
 import com.innova.exception.UnauthorizedException;
 import com.innova.model.ActiveSessions;
+import com.innova.model.Role;
 import com.innova.model.TokenBlacklist;
 import com.innova.model.User;
 import com.innova.repository.ActiveSessionsRepository;
+import com.innova.repository.RoleRepository;
 import com.innova.repository.TokenBlacklistRepository;
 import com.innova.repository.UserRepository;
 import com.innova.security.jwt.JwtProvider;
@@ -34,6 +34,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+import java.util.HashSet;
 import java.util.Set;
 
 @RestController
@@ -45,6 +46,10 @@ public class UserController {
 
     @Autowired
     UserRepository userRepository;
+
+    @Autowired
+    RoleRepository roleRepository;
+
 
     @Autowired
     UserServiceImpl userServiceImpl;
@@ -80,7 +85,7 @@ public class UserController {
             user.setActiveSessions(null);
             userRepository.save(user);
             for (ActiveSessions activeSession : activeSessionsForUserWithCurrentEmail) {
-                if(activeSessionsRepository.existsById(activeSession.getRefreshToken())){
+                if (activeSessionsRepository.existsById(activeSession.getRefreshToken())) {
                     activeSessionsRepository.delete(activeSession);
                 }
             }
@@ -140,7 +145,7 @@ public class UserController {
 
     @PostMapping("/create-new-password")
     public ResponseEntity<?> createNewPassword(@RequestBody ForgotAndChangePasswordForm forgotAndChangePasswordForm,
-            HttpServletRequest request) {
+                                               HttpServletRequest request) {
         if (!forgotAndChangePasswordForm.checkAllFieldsAreGiven(forgotAndChangePasswordForm)) {
             throw new BadRequestException("All fields should be given", ErrorCodes.REQUIRE_ALL_FIELDS);
         } else {
@@ -173,7 +178,7 @@ public class UserController {
 
     @DeleteMapping("/logout-from-session")
     public ResponseEntity<?> logoutFromSession(@RequestParam("token") String refreshToken,
-            @RequestParam("accessToken") String accessToken, HttpServletRequest request) {
+                                               @RequestParam("accessToken") String accessToken, HttpServletRequest request) {
         if (refreshToken != null) {
             if (jwtProvider.validateJwtToken(refreshToken, "refresh", request)) {
                 activeSessionsRepository.deleteById(refreshToken);
@@ -190,6 +195,21 @@ public class UserController {
         } else {
             throw new BadRequestException("Token must be given", ErrorCodes.REQUIRE_ALL_FIELDS);
         }
+    }
 
+    @PostMapping("/become-editor")
+    public ResponseEntity<?> becomeEditor(@RequestBody EditorApplicationForm applicationForm) {
+        try {
+            Set<Role> roles = new HashSet<>();;
+            Role role = roleRepository.findById(1).get();
+            roles.add(role);
+            User user = userRepository.findByRolesIn(roles)
+                    .orElseThrow(() -> new BadRequestException("User with given role could not found", ErrorCodes.NO_SUCH_USER));
+            eventPublisher.publishEvent(new OnEditorApplicationSuccessEvent(user, applicationForm,"/api/auth"));
+            SuccessResponse response = new SuccessResponse(HttpStatus.OK,"Email successfuly sent");
+            return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
+        }catch (Exception re) {
+            throw new ErrorWhileSendingEmailException(re.getMessage());
+        }
     }
 }
