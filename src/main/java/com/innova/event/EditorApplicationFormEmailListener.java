@@ -44,8 +44,8 @@ public class EditorApplicationFormEmailListener implements ApplicationListener<O
 
         String recipient = user.getEmail();
         //TODO accept reject url
-        String acceptUrl = "http://localhost:8080" + event.getAppUrl() + "/makeEditor?isAccepted=true&email=" + applicationForm.getEmail();
-        String rejectUrl = "http://localhost:8080" + event.getAppUrl() + "/makeEditor?isAccepted=false&email=" + applicationForm.getEmail();
+        String acceptUrl = "https://book-review-backend.herokuapp.com" + event.getAppUrl() + "/makeEditor?isAccepted=true&email=" + applicationForm.getEmail();
+        String rejectUrl = "https://book-review-backend.herokuapp.com" + event.getAppUrl() + "/makeEditor?isAccepted=false&email=" + applicationForm.getEmail();
 
         Map model = new HashMap();
         model.put("acceptUrl", acceptUrl);

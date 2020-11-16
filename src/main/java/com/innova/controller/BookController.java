@@ -40,7 +40,7 @@ public class BookController {
     @GetMapping("/")
     public ResponseEntity<?> getBook(@RequestParam("book-id") String bookId) {
         if (bookId == null) {
-            return ResponseEntity.status(HttpStatus.SEE_OTHER).location(URI.create("http://localhost:4200/book")).build();
+            return ResponseEntity.status(HttpStatus.SEE_OTHER).location(URI.create("https://book-review-backend.herokuapp.com/book")).build();
         } else {
             if(bookRepository.existsById(bookId)){
                 Book book = bookRepository.findById(bookId).get();
@@ -58,7 +58,7 @@ public class BookController {
                                                @RequestBody EditorReviewForm editorReviewForm){
         User user = userServiceImpl.getUserWithAuthentication(SecurityContextHolder.getContext().getAuthentication());
         if (bookId == null) {
-            return ResponseEntity.status(HttpStatus.SEE_OTHER).location(URI.create("http://localhost:4200/book")).build();
+            return ResponseEntity.status(HttpStatus.SEE_OTHER).location(URI.create("https://book-review-backend.herokuapp.com/book")).build();
         }
         else{
             Book book;
@@ -89,7 +89,7 @@ public class BookController {
                                              @RequestBody UserReviewForm userReviewForm){
         User user = userServiceImpl.getUserWithAuthentication(SecurityContextHolder.getContext().getAuthentication());
         if (bookId == null) {
-            return ResponseEntity.status(HttpStatus.SEE_OTHER).location(URI.create("http://localhost:4200/book")).build();
+            return ResponseEntity.status(HttpStatus.SEE_OTHER).location(URI.create("https://book-review-backend.herokuapp.com/book")).build();
         }
         else{
             Book book;

@@ -173,7 +173,7 @@ public class AuthenticationController {
     public ResponseEntity<?> confirmRegistration(@RequestParam("token") String token, HttpServletRequest request)
             throws URISyntaxException {
         if (token == null) {
-            return ResponseEntity.status(HttpStatus.SEE_OTHER).location(URI.create("http://localhost:4200")).build();
+            return ResponseEntity.status(HttpStatus.SEE_OTHER).location(URI.create("https://book-review-backend.herokuapp.com")).build();
         }
 
         if (token != null && jwtProvider.validateJwtToken(token, "verification", request)) {
@@ -183,10 +183,10 @@ public class AuthenticationController {
             user.setEnabled(true);
             userRepository.save(user);
 
-            return ResponseEntity.status(HttpStatus.SEE_OTHER).location(URI.create("http://localhost:4200/mailsuccess"))
+            return ResponseEntity.status(HttpStatus.SEE_OTHER).location(URI.create("https://book-review-backend.herokuapp.com"))
                     .build();
         } else {
-            return ResponseEntity.status(HttpStatus.SEE_OTHER).location(URI.create("http://localhost:4200/mailerror"))
+            return ResponseEntity.status(HttpStatus.SEE_OTHER).location(URI.create("https://book-review-backend.herokuapp.com"))
                     .build();
         }
     }
@@ -195,7 +195,7 @@ public class AuthenticationController {
     public ResponseEntity<?> makeEditor(@RequestParam("isAccepted") String isAccepted, @RequestParam("email") String email, HttpServletRequest request)
             throws URISyntaxException {
         if (email==null) {
-            return ResponseEntity.status(HttpStatus.SEE_OTHER).location(URI.create("http://localhost:4200")).build();
+            return ResponseEntity.status(HttpStatus.SEE_OTHER).location(URI.create("https://book-review-backend.herokuapp.com")).build();
         }
         if(isAccepted.equals("true")){
             Set<Role> roles = new HashSet<>();
@@ -206,11 +206,11 @@ public class AuthenticationController {
             roles.add(userRole);
             user.setRoles(roles);
             userRepository.save(user);
-            return ResponseEntity.status(HttpStatus.SEE_OTHER).location(URI.create("http://localhost:4200/")).build();
+            return ResponseEntity.status(HttpStatus.SEE_OTHER).location(URI.create("https://book-review-backend.herokuapp.com")).build();
             //TODO kullaniciya editor oldugunu bildir ve success sayfasi
         }
         else{
-            return ResponseEntity.status(HttpStatus.SEE_OTHER).location(URI.create("http://localhost:4200/")).build();
+            return ResponseEntity.status(HttpStatus.SEE_OTHER).location(URI.create("https://book-review-backend.herokuapp.com")).build();
             //TODO kullaniciya editor olmadigini bildir reject sayfasi
 
         }
