@@ -148,6 +148,8 @@ public class AuthenticationController {
                 .orElseThrow(() -> new RuntimeException("Fail! -> Cause: User Role not find."));
         roles.add(userRole);
         user.setRoles(roles);
+        //TODO correct after heroku deploy
+        user.setEnabled(true);
         userRepository.save(user);
         if(user.getId()==100){
             userRole = roleRepository.findByRole(Roles.ROLE_ADMIN)
