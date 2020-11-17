@@ -183,10 +183,10 @@ public class AuthenticationController {
             user.setEnabled(true);
             userRepository.save(user);
 
-            return ResponseEntity.status(HttpStatus.SEE_OTHER).location(URI.create("https://book-review-backend.herokuapp.com/mailsuccess"))
+            return ResponseEntity.status(HttpStatus.SEE_OTHER).location(URI.create("https://book-review-backend.herokuapp.com/#/mailsuccess"))
                     .build();
         } else {
-            return ResponseEntity.status(HttpStatus.SEE_OTHER).location(URI.create("https://book-review-backend.herokuapp.com/mailerror"))
+            return ResponseEntity.status(HttpStatus.SEE_OTHER).location(URI.create("https://book-review-backend.herokuapp.com/#/mailerror"))
                     .build();
         }
     }
