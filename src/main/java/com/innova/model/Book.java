@@ -30,9 +30,8 @@ public class Book {
     @Column(name = "user_score")
     private int userScore;
 
-    @OneToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "mode_id", nullable = false)
-    private Modes modes;
+    @OneToOne(mappedBy = "book", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private BookModes bookModes;
 
     @Column(name = "has_editor_review")
     private boolean hasEditorReview;
@@ -111,12 +110,12 @@ public class Book {
         this.userScore = userScore;
     }
 
-    public Modes getModes() {
-        return modes;
+    public BookModes getModes() {
+        return bookModes;
     }
 
-    public void setModes(Modes modes) {
-        this.modes = modes;
+    public void setModes(BookModes modes) {
+        this.bookModes = modes;
     }
 
     public boolean isHasEditorReview() {
@@ -143,13 +142,19 @@ public class Book {
         this.hasUserReview = hasUserReview;
     }
 
-
-
     public Set<BookReview> getBookReviews() {
         return bookReviews;
     }
 
     public void setBookReviews(Set<BookReview> bookReviews) {
         this.bookReviews = bookReviews;
+    }
+
+    public BookModes getBookModes() {
+        return bookModes;
+    }
+
+    public void setBookModes(BookModes bookModes) {
+        this.bookModes = bookModes;
     }
 }

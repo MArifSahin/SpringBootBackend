@@ -32,7 +32,7 @@ public class Movie {
 
     @OneToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "mode_id", nullable = false)
-    private Modes modes;
+    private MovieModes movieModes;
 
     @Column(name = "review_number")
     private int reviewNumber;
@@ -99,12 +99,12 @@ public class Movie {
         this.user_score = user_score;
     }
 
-    public Modes getModes() {
-        return modes;
+    public MovieModes getModes() {
+        return movieModes;
     }
 
-    public void setModes(Modes modes) {
-        this.modes = modes;
+    public void setModes(MovieModes modes) {
+        this.movieModes = modes;
     }
 
     public int getReviewNumber() {
