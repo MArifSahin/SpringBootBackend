@@ -3,10 +3,12 @@ package com.innova.model;
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
+import java.util.HashMap;
+import java.util.Map;
 
 @Entity
-@Table(name = "content_modes", schema = "public")
-public class Modes {
+@Table(name = "book_modes", schema = "public")
+public class BookModes {
     @NotBlank
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "mode_seq")
@@ -17,9 +19,9 @@ public class Modes {
     @Size(min = 0, max = 100)
     private int drama;
 
-    @Column(name = "comedy")
+    @Column(name = "fun")
     @Size(min = 0, max = 100)
-    private int comedy;
+    private int fun;
 
     @Column(name = "action")
     @Size(min = 0, max = 100)
@@ -41,8 +43,22 @@ public class Modes {
     @Size(min = 0, max = 100)
     private int horror;
 
-    public Modes(@NotBlank Integer id) {
+    @OneToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "book_id", nullable = false)
+    private Book book;
+
+    public BookModes(@NotBlank Integer id) {
         this.id = id;
+    }
+
+    public BookModes() {
+        this.drama=0;
+        this.action=0;
+        this.adventure=0;
+        this.fun=0;
+        this.horror=0;
+        this.romance=0;
+        this.thriller=0;
     }
 
     public Integer getId() {
@@ -61,12 +77,12 @@ public class Modes {
         this.drama = drama;
     }
 
-    public int getComedy() {
-        return comedy;
+    public int getFun() {
+        return fun;
     }
 
-    public void setComedy(int comedy) {
-        this.comedy = comedy;
+    public void setFun(int fun) {
+        this.fun = fun;
     }
 
     public int getAction() {
@@ -107,5 +123,26 @@ public class Modes {
 
     public void setHorror(int horror) {
         this.horror = horror;
+    }
+
+    public Book getBook() {
+        return book;
+    }
+
+    public void setBook(Book book) {
+        this.book = book;
+    }
+
+
+    public Map<String, Integer> createMap(){
+        Map<String,Integer> modesMap=new HashMap<>();
+        modesMap.put("drama",this.drama);
+        modesMap.put("action",this.action);
+        modesMap.put("adventure",this.adventure);
+        modesMap.put("fun",this.fun);
+        modesMap.put("horror",this.horror);
+        modesMap.put("romance",this.romance);
+        modesMap.put("thriller",this.thriller);
+        return modesMap;
     }
 }

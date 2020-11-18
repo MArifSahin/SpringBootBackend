@@ -54,25 +54,12 @@ create table if not exists "active_sessions"
     user_id       int                         NOT NULL references cloud_users (id)
 );
 
-create table if not exists "content_modes"
-(
-    id        int primary key,
-    dram      int,
-    comedy    int,
-    action    int,
-    adventure int,
-    romance   int,
-    thriller  int,
-    horror    int
-);
-
 create table if not exists "content_book"
 (
-    id                int primary key,
+    id                varchar primary key,
     name              varchar,
     editor_score      int,
     user_score        int,
-    mode_id           int not null references content_modes (id),
     review_number     int,
     has_editor_review boolean,
     has_user_review   boolean
@@ -80,14 +67,39 @@ create table if not exists "content_book"
 
 create table if not exists "content_movie"
 (
-    id                int primary key,
+    id                varchar primary key,
     name              varchar,
     editor_score      int,
     user_score        int,
-    mode_id           int not null references content_modes (id),
     review_number     int,
     has_editor_review boolean,
     has_user_review   boolean
+);
+
+create table if not exists "book_modes"
+(
+    id        int primary key,
+    dram      int,
+    fun       int,
+    action    int,
+    adventure int,
+    romance   int,
+    thriller  int,
+    horror    int,
+    book_id   varchar NOT NULL references content_book (id)
+);
+
+create table if not exists "movie_modes"
+(
+    id        int primary key,
+    dram      int,
+    fun       int,
+    action    int,
+    adventure int,
+    romance   int,
+    thriller  int,
+    horror    int,
+    movie_id  varchar NOT NULL references content_movie (id)
 );
 
 create table if not exists "movie_review"
@@ -97,7 +109,7 @@ create table if not exists "movie_review"
     is_editor_review boolean,
     score            int,
     review_date      timestamp without time zone NOT NULL,
-    movie_id         int                         NOT NULL references content_movie (id),
+    movie_id         varchar                     NOT NULL references content_movie (id),
     user_id          int                         NOT NULL references cloud_users (id)
 );
 
@@ -108,6 +120,6 @@ create table if not exists "book_review"
     is_editor_review boolean,
     score            int,
     review_date      timestamp without time zone NOT NULL,
-    book_id          int                         NOT NULL references content_book (id),
+    book_id          varchar                     NOT NULL references content_book (id),
     user_id          int                         NOT NULL references cloud_users (id)
 );
