@@ -20,4 +20,15 @@ public class BookResponse {
         this.userReviews = userReviews;
         this.modes = modes;
     }
+    @Override
+    public String toString() {
+        return "BookResponse{" +
+                "bookName='" + bookName + '\'' +
+                ", editorScore=" + editorScore +
+                ", userScore=" + userScore +
+                ", editorReview='" + editorReview + '\'' +
+                ", userReviews=" + userReviews +
+                ", modes=" + modes +
+                '}';
+    }
 }
