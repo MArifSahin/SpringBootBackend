@@ -73,12 +73,20 @@ public class BookReview {
         this.reviewText = reviewText;
     }
 
-    public Boolean getEditorReview() {
+    public Boolean isEditorReview() {
         return isEditorReview;
     }
 
     public void setEditorReview(Boolean editorReview) {
         isEditorReview = editorReview;
+    }
+
+    public int getScore() {
+        return score;
+    }
+
+    public void setScore(int score) {
+        this.score = score;
     }
 
     public LocalDateTime getReviewDate() {
