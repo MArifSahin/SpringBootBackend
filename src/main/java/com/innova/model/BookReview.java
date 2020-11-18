@@ -40,10 +40,6 @@ public class BookReview {
     @JsonBackReference
     private User user;
 
-    public BookReview(@NotBlank Integer id) {
-        this.id = id;
-    }
-
     public BookReview(String reviewText, Boolean isEditorReview, @NotNull LocalDateTime reviewDate, int score, Book book, User user) {
         this.reviewText = reviewText;
         this.isEditorReview = isEditorReview;

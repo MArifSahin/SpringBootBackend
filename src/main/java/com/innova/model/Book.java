@@ -34,10 +34,10 @@ public class Book {
     private BookModes bookModes;
 
     @Column(name = "has_editor_review")
-    private boolean hasEditorReview;
+    public boolean hasEditorReview;
 
     @Column(name = "has_user_review")
-    private boolean hasUserReview;
+    public boolean hasUserReview;
 
     @Column(name = "review_number")
     private int reviewNumber;
@@ -118,13 +118,6 @@ public class Book {
         this.bookModes = modes;
     }
 
-    public boolean isHasEditorReview() {
-        return hasEditorReview;
-    }
-
-    public void setHasEditorReview(boolean hasEditorReview) {
-        this.hasEditorReview = hasEditorReview;
-    }
 
     public int getReviewNumber() {
         return reviewNumber;
@@ -132,14 +125,6 @@ public class Book {
 
     public void setReviewNumber(int reviewNumber) {
         this.reviewNumber = reviewNumber;
-    }
-
-    public boolean isHasUserReview() {
-        return hasUserReview;
-    }
-
-    public void setHasUserReview(boolean hasUserReview) {
-        this.hasUserReview = hasUserReview;
     }
 
     public Set<BookReview> getBookReviews() {

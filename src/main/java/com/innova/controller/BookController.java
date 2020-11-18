@@ -5,10 +5,7 @@ import com.innova.dto.request.EditorReviewForm;
 import com.innova.dto.request.UserReviewForm;
 import com.innova.dto.response.BookResponse;
 import com.innova.exception.BadRequestException;
-import com.innova.model.Book;
-import com.innova.model.BookModes;
-import com.innova.model.BookReview;
-import com.innova.model.User;
+import com.innova.model.*;
 import com.innova.repository.BookRepository;
 import com.innova.repository.BookReviewRepository;
 import com.innova.repository.UserRepository;
@@ -21,9 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.*;
 
 @RestController
 @RequestMapping("api/book")
@@ -47,47 +42,50 @@ public class BookController {
         if (bookId == null) {
             return ResponseEntity.status(HttpStatus.SEE_OTHER).location(URI.create("http://localhost:4200/book")).build();
         } else {
-            if(bookRepository.existsById(bookId)){
+            if (bookRepository.existsById(bookId)) {
                 Book book = bookRepository.findById(bookId).get();
                 Iterator<BookReview> itr = book.getBookReviews().iterator();
-                Set<String> userReviews=new HashSet<>();
-                String editorReview="";
-                while(itr.hasNext()){
-                    BookReview itrReview=itr.next();
-                    if(itrReview.isEditorReview()){
-                        editorReview=itrReview.getReviewText();
-                    }
-                    else{
-                        userReviews.add(itrReview.getReviewText());
+                Map<String, String> userReviews = new HashMap<>();
+                AbstractMap.SimpleEntry editorReview = null;
+                while (itr.hasNext()) {
+                    BookReview itrReview = itr.next();
+                    if (itrReview.isEditorReview()) {
+                        editorReview = new AbstractMap.SimpleEntry(itrReview.getUser().getUsername(), itrReview.getReviewText());
+                    } else {
+                        userReviews.put(itrReview.getUser().getUsername(), itrReview.getReviewText());
                     }
                 }
 
-                BookResponse bookResponse=new BookResponse(
-                        book.getName(),book.getEditorScore(),book.getUserScore(),editorReview,userReviews,book.getModes().createMap()
+                BookResponse bookResponse = new BookResponse(
+                        book.getName(), book.getEditorScore(), book.getUserScore(), editorReview, userReviews, book.getModes().createMap()
                 );
                 System.out.println(bookResponse);
                 return ResponseEntity.ok().body(bookResponse);
-            }
-            else{
+            } else {
                 throw new BadRequestException("No such book", ErrorCodes.NO_SUCH_BOOK);
             }
         }
     }
 
     @PostMapping("/write-editor-review")
-    public ResponseEntity<?> writeEditorReview(@RequestBody EditorReviewForm editorReviewForm){
+    public ResponseEntity<?> writeEditorReview(@RequestBody EditorReviewForm editorReviewForm) {
         User user = userServiceImpl.getUserWithAuthentication(SecurityContextHolder.getContext().getAuthentication());
+      if (!user.getRoles().iterator().next().getRole().equals(Roles.ROLE_EDITOR)) {
+            return new ResponseEntity<String>("Only editors can write editor review!", HttpStatus.BAD_REQUEST);
+        }
         if (editorReviewForm.getBookId() == null) {
             return ResponseEntity.status(HttpStatus.SEE_OTHER).location(URI.create("http://localhost:4200/book")).build();
-        }
-        else{
+        } else {
             Book book;
-            if(bookRepository.existsById(editorReviewForm.getBookId())){
+            if (bookRepository.existsById(editorReviewForm.getBookId())) {
                 book = bookRepository.findById(editorReviewForm.getBookId()).get();
-            }
-            else{
-                book = new Book(editorReviewForm.getBookId(),editorReviewForm.getBookName(),0,0,0);
-                book.setHasEditorReview(true);
+                if (book.hasEditorReview) {
+                    return new ResponseEntity<String>("This book already have an editor review!", HttpStatus.BAD_REQUEST);
+                }
+                book.setEditorScore(editorReviewForm.getEditorScore());
+            } else {
+                book = new Book(editorReviewForm.getBookId(), editorReviewForm.getBookName(), editorReviewForm.getEditorScore(), 0, 0);
+                book.hasEditorReview = true;
                 //TODO get modes
                 BookModes bookModes = new BookModes();
                 bookModes.setBook(book);
@@ -97,33 +95,30 @@ public class BookController {
 
             BookReview bookReview = new BookReview(editorReviewForm.getReviewText(),
                     true,
-                    null,
+                    LocalDateTime.now(),
                     editorReviewForm.getEditorScore(),
                     book,
                     user);
             bookReviewRepository.save(bookReview);
-            book.setReviewNumber(book.getReviewNumber()+1);
             return ResponseEntity.ok().body(bookReview);
         }
     }
 
     @PostMapping("/write-user-review")
-    public ResponseEntity<?> writeUserReview(@RequestBody UserReviewForm userReviewForm){
+    public ResponseEntity<?> writeUserReview(@RequestBody UserReviewForm userReviewForm) {
         User user = userServiceImpl.getUserWithAuthentication(SecurityContextHolder.getContext().getAuthentication());
         if (userReviewForm.getBookId() == null) {
             return ResponseEntity.status(HttpStatus.SEE_OTHER).location(URI.create("http://localhost:4200/book")).build();
-        }
-        else{
+        } else {
             Book book;
-            if(bookRepository.existsById(userReviewForm.getBookId())){
+            if (bookRepository.existsById(userReviewForm.getBookId())) {
                 book = bookRepository.findById(userReviewForm.getBookId()).get();
-                int newScore=(book.getUserScore()*book.getReviewNumber()+userReviewForm.getUserScore())/(book.getReviewNumber()+1);
+                int newScore = (book.getUserScore() * book.getReviewNumber() + userReviewForm.getUserScore()) / (book.getReviewNumber() + 1);
                 book.setUserScore(newScore);
-                book.setReviewNumber(book.getReviewNumber()+1);
-            }
-            else{
-                book = new Book(userReviewForm.getBookId(),userReviewForm.getBookName(),0, userReviewForm.getUserScore(), 1);
-                book.setHasUserReview(true);
+                book.setReviewNumber(book.getReviewNumber() + 1);
+            } else {
+                book = new Book(userReviewForm.getBookId(), userReviewForm.getBookName(), 0, userReviewForm.getUserScore(), 1);
+                book.hasUserReview=true;
                 BookModes bookModes = new BookModes();
                 bookModes.setBook(book);
                 book.setBookModes(bookModes);
