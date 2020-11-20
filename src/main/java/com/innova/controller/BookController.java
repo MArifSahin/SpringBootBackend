@@ -38,7 +38,7 @@ public class BookController {
 
 
     @GetMapping("/")
-    public ResponseEntity<BookResponse> getBook(@RequestParam("book-id") String bookId) {
+    public ResponseEntity<BookResponse> getBook(@RequestParam("bookId") String bookId) {
         if (bookId == null) {
             return ResponseEntity.status(HttpStatus.SEE_OTHER).location(URI.create("https://book-review-backend.herokuapp.com/#/book")).build();
         } else {
