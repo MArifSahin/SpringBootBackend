@@ -157,4 +157,32 @@ public class BookController {
         return ResponseEntity.ok().body(bookReviews);
     }
 
+    @GetMapping("/highest-rated")
+    public ResponseEntity<Map<String, Integer>> highestRated() {
+        List<Book> books = bookRepository.findAllByOrderByUserScoreDesc();
+
+        Map<String, Integer> highestRatedBooks = new LinkedHashMap<>();
+        Iterator<Book> itr= books.iterator();
+        int length = 0;
+        while (itr.hasNext() && length <= 5){
+            Book book=itr.next();
+            highestRatedBooks.put(book.getName(),book.getUserScore());
+        }
+        return ResponseEntity.ok().body(highestRatedBooks);
+    }
+
+    @GetMapping("/highest-reviewed")
+    public ResponseEntity<Map<String, Integer>> highestReviewed() {
+        List<Book> books = bookRepository.findAllByOrderByReviewNumberDesc();
+
+        Map<String, Integer> highestReviewedBooks = new LinkedHashMap<>();
+        Iterator<Book> itr= books.iterator();
+        int length = 0;
+        while (itr.hasNext() && length <= 5){
+            Book book=itr.next();
+            highestReviewedBooks.put(book.getName(),book.getReviewNumber());
+        }
+        return ResponseEntity.ok().body(highestReviewedBooks);
+    }
+
 }
