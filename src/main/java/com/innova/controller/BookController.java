@@ -136,4 +136,25 @@ public class BookController {
         }
     }
 
+    @GetMapping("/last-reviews")
+    public ResponseEntity<Map<String,LastReviewedBookResponse>> lastReviews() {
+        List<BookReview> reviews = bookReviewRepository.findByOrderByReviewDateDesc();
+        System.out.println(reviews);
+        Map<String, LastReviewedBookResponse> bookReviews = new HashMap<>();
+        Iterator<BookReview> itr = reviews.iterator();
+        BookReview review;
+        int length=0;
+        LastReviewedBookResponse lastReviewedBookResponse = null;
+        while (itr.hasNext() && length<=5) {
+            review = itr.next();
+            if (!bookReviews.containsKey(review.getBook().getName())){
+                System.out.println(review.getBook().getName());
+                lastReviewedBookResponse = new LastReviewedBookResponse(review.getBook().getEditorScore(),review.getBook().getUserScore(),review.getBook().getEditorReview());
+                bookReviews.put(review.getBook().getName(), lastReviewedBookResponse);
+                length++;
+            }
+        }
+        return ResponseEntity.ok().body(bookReviews);
+    }
+
 }

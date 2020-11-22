@@ -4,7 +4,9 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
+import java.util.AbstractMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 @Entity
@@ -141,5 +143,18 @@ public class Book {
 
     public void setBookModes(BookModes bookModes) {
         this.bookModes = bookModes;
+    }
+
+    public AbstractMap.SimpleEntry getEditorReview(){
+        AbstractMap.SimpleEntry editorReview = null;
+        Iterator<BookReview> itr=this.bookReviews.iterator();
+        while (itr.hasNext()) {
+            BookReview itrReview = itr.next();
+            if (itrReview.isEditorReview()) {
+                editorReview = new AbstractMap.SimpleEntry(itrReview.getUser().getUsername(), itrReview.getReviewText());
+                return editorReview;
+            }
+        }
+        return null;
     }
 }
