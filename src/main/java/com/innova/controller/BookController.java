@@ -2,11 +2,14 @@ package com.innova.controller;
 
 import com.innova.constants.ErrorCodes;
 import com.innova.dto.request.EditorReviewForm;
+import com.innova.dto.request.MoodsForm;
 import com.innova.dto.request.UserReviewForm;
 import com.innova.dto.response.BookResponse;
+import com.innova.dto.response.BooksOfYourMoodResponse;
 import com.innova.dto.response.LastReviewedBookResponse;
 import com.innova.exception.BadRequestException;
 import com.innova.model.*;
+import com.innova.repository.BookModesRepository;
 import com.innova.repository.BookRepository;
 import com.innova.repository.BookReviewRepository;
 import com.innova.repository.UserRepository;
@@ -38,6 +41,9 @@ public class BookController {
     BookReviewRepository bookReviewRepository;
 
     @Autowired
+    BookModesRepository bookModesRepository;
+
+    @Autowired
     UserServiceImpl userServiceImpl;
 
 
@@ -61,7 +67,7 @@ public class BookController {
                 }
 
                 BookResponse bookResponse = new BookResponse(
-                        book.getName(), book.getEditorScore(), book.getUserScore(), editorReview, userReviews, book.getModes().createMap()
+                        book.getId(), book.getName(), book.getEditorScore(), book.getUserScore(), editorReview, userReviews, book.getModes().createMap()
                 );
                 return ResponseEntity.ok().body(bookResponse);
             } else {
@@ -91,7 +97,7 @@ public class BookController {
                 book = new Book(editorReviewForm.getBookId(), editorReviewForm.getBookName(), editorReviewForm.getEditorScore(), 0, 0);
                 book.hasEditorReview = true;
                 //TODO get modes
-                BookModes bookModes = new BookModes();
+                BookModes bookModes = new BookModes(editorReviewForm.getMoods());
                 bookModes.setBook(book);
                 book.setBookModes(bookModes);
                 bookRepository.save(book);
@@ -151,7 +157,8 @@ public class BookController {
         while (itr.hasNext() && length <= 5) {
             review = itr.next();
             if (!bookReviews.containsKey(review.getBook().getName())) {
-                 lastReviewedBookResponse = new LastReviewedBookResponse(review.getBook().getEditorScore(),
+                lastReviewedBookResponse = new LastReviewedBookResponse(review.getBook().getId(),
+                        review.getBook().getEditorScore(),
                         review.getBook().getUserScore(),
                         review.getBook().getEditorReview().getValue().toString(),
                         review.getBook().getEditorReview().getKey().toString());
@@ -190,4 +197,17 @@ public class BookController {
         return ResponseEntity.ok().body(highestReviewedBooks);
     }
 
+    @PostMapping("/find-book-of-mood")
+    public ResponseEntity<List<BooksOfYourMoodResponse>> findBookOfMood(@RequestBody MoodsForm moodsForm) {
+        System.out.println(moodsForm);
+        List<BookModes> bookModes = bookModesRepository.findAllBooksByModes(moodsForm.getDrama(),
+                moodsForm.getFun(), moodsForm.getAction(), moodsForm.getAdventure(), moodsForm.getRomance(), moodsForm.getThriller(), moodsForm.getHorror());
+        Iterator<BookModes> iterator = bookModes.iterator();
+        List<BooksOfYourMoodResponse> booksOfYourMood = new ArrayList<>();
+        while (iterator.hasNext()) {
+            Book book = iterator.next().getBook();
+            booksOfYourMood.add(new BooksOfYourMoodResponse(book.getId(), book.getName(), book.getEditorScore(), book.getUserScore()));
+        }
+        return ResponseEntity.ok().body(booksOfYourMood);
+    }
 }

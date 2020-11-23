@@ -11,9 +11,11 @@ public class BookResponse {
     private int userScore;
     private AbstractMap.SimpleEntry editorReview;
     private Map<String, String> userReviews;
-    private Map<String,Integer> modes;
+    private Map<String, Integer> modes;
+    private String bookId;
 
-    public BookResponse(String bookName, int editorScore, int userScore, AbstractMap.SimpleEntry editorReview, Map<String, String> userReviews, Map<String, Integer> modes) {
+    public BookResponse(String bookId, String bookName, int editorScore, int userScore, AbstractMap.SimpleEntry editorReview, Map<String, String> userReviews, Map<String, Integer> modes) {
+        this.bookId = bookId;
         this.bookName = bookName;
         this.editorScore = editorScore;
         this.userScore = userScore;
@@ -21,6 +23,7 @@ public class BookResponse {
         this.userReviews = userReviews;
         this.modes = modes;
     }
+
     @Override
     public String toString() {
         return "BookResponse{" +

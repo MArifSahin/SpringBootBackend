@@ -7,8 +7,10 @@ public class LastReviewedBookResponse {
     private int userScore;
     private String editorReview;
     private String editor;
+    private String bookId;
 
-    public LastReviewedBookResponse(int editorScore, int userScore, String editorReview, String editor) {
+    public LastReviewedBookResponse(String bookId, int editorScore, int userScore, String editorReview, String editor) {
+        this.bookId = bookId;
         this.editorScore = editorScore;
         this.userScore = userScore;
         this.editorReview = editorReview;
@@ -45,5 +47,13 @@ public class LastReviewedBookResponse {
 
     public void setEditor(String editor) {
         this.editor = editor;
+    }
+
+    public String getBookId() {
+        return bookId;
+    }
+
+    public void setBookId(String bookId) {
+        this.bookId = bookId;
     }
 }

@@ -61,6 +61,16 @@ public class BookModes {
         this.thriller=0;
     }
 
+    public BookModes(Map<String, Integer> modesMap){
+        this.drama=modesMap.get("drama");
+        this.action=modesMap.get("action");
+        this.adventure=modesMap.get("adventure");
+        this.fun=modesMap.get("fun");
+        this.horror=modesMap.get("horror");
+        this.romance=modesMap.get("romance");
+        this.thriller=modesMap.get("thriller");
+    }
+
     public Integer getId() {
         return id;
     }

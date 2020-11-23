@@ -17,7 +17,7 @@ public class EditorReviewForm {
     private int editorScore;
 
     @NotBlank
-    private Map<String,Integer> modes;
+    private Map<String,Integer> moods;
 
     public String getReviewText() {
         return reviewText;
@@ -51,12 +51,12 @@ public class EditorReviewForm {
         this.bookName = bookName;
     }
 
-    public Map<String, Integer> getModes() {
-        return modes;
+    public Map<String, Integer> getMoods() {
+        return moods;
     }
 
-    public void setModes(Map<String, Integer> modes) {
-        this.modes = modes;
+    public void setMoods(Map<String, Integer> moods) {
+        this.moods = moods;
     }
 
     @Override
@@ -66,7 +66,7 @@ public class EditorReviewForm {
                 ", bookName='" + bookName + '\'' +
                 ", reviewText='" + reviewText + '\'' +
                 ", editorScore=" + editorScore +
-                ", modes=" + modes +
+                ", modes=" + moods +
                 '}';
     }
 }
