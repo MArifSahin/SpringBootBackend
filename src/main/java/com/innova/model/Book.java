@@ -155,6 +155,6 @@ public class Book {
                 return editorReview;
             }
         }
-        return null;
+        return new AbstractMap.SimpleEntry("", "");
     }
 }

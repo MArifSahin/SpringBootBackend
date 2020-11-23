@@ -70,7 +70,8 @@ public class BookController {
     @PostMapping("/write-editor-review")
     public ResponseEntity<?> writeEditorReview(@RequestBody EditorReviewForm editorReviewForm) {
         User user = userServiceImpl.getUserWithAuthentication(SecurityContextHolder.getContext().getAuthentication());
-      if (!user.getRoles().iterator().next().getRole().equals(Roles.ROLE_EDITOR)) {
+
+        if (!user.getRoles().iterator().next().getRole().equals(Roles.ROLE_EDITOR)) {
             return new ResponseEntity<String>("Only editors can write editor review!", HttpStatus.BAD_REQUEST);
         }
         if (editorReviewForm.getBookId() == null) {
@@ -118,7 +119,7 @@ public class BookController {
                 book.setReviewNumber(book.getReviewNumber() + 1);
             } else {
                 book = new Book(userReviewForm.getBookId(), userReviewForm.getBookName(), 0, userReviewForm.getUserScore(), 1);
-                book.hasUserReview=true;
+                book.hasUserReview = true;
                 BookModes bookModes = new BookModes();
                 bookModes.setBook(book);
                 book.setBookModes(bookModes);
@@ -139,17 +140,18 @@ public class BookController {
     @GetMapping("/last-reviews")
     public ResponseEntity<Map<String,LastReviewedBookResponse>> lastReviews() {
         List<BookReview> reviews = bookReviewRepository.findByOrderByReviewDateDesc();
-        System.out.println(reviews);
         Map<String, LastReviewedBookResponse> bookReviews = new HashMap<>();
         Iterator<BookReview> itr = reviews.iterator();
         BookReview review;
-        int length=0;
+        int length = 0;
         LastReviewedBookResponse lastReviewedBookResponse = null;
-        while (itr.hasNext() && length<=5) {
+        while (itr.hasNext() && length <= 5) {
             review = itr.next();
-            if (!bookReviews.containsKey(review.getBook().getName())){
-                System.out.println(review.getBook().getName());
-                lastReviewedBookResponse = new LastReviewedBookResponse(review.getBook().getEditorScore(),review.getBook().getUserScore(),review.getBook().getEditorReview());
+            if (!bookReviews.containsKey(review.getBook().getName())) {
+                 lastReviewedBookResponse = new LastReviewedBookResponse(review.getBook().getEditorScore(),
+                        review.getBook().getUserScore(),
+                        review.getBook().getEditorReview().getValue().toString(),
+                        review.getBook().getEditorReview().getKey().toString());
                 bookReviews.put(review.getBook().getName(), lastReviewedBookResponse);
                 length++;
             }
@@ -162,11 +164,11 @@ public class BookController {
         List<Book> books = bookRepository.findAllByOrderByUserScoreDesc();
 
         Map<String, Integer> highestRatedBooks = new LinkedHashMap<>();
-        Iterator<Book> itr= books.iterator();
+        Iterator<Book> itr = books.iterator();
         int length = 0;
-        while (itr.hasNext() && length <= 5){
-            Book book=itr.next();
-            highestRatedBooks.put(book.getName(),book.getUserScore());
+        while (itr.hasNext() && length <= 5) {
+            Book book = itr.next();
+            highestRatedBooks.put(book.getName(), book.getUserScore());
         }
         return ResponseEntity.ok().body(highestRatedBooks);
     }
@@ -176,11 +178,11 @@ public class BookController {
         List<Book> books = bookRepository.findAllByOrderByReviewNumberDesc();
 
         Map<String, Integer> highestReviewedBooks = new LinkedHashMap<>();
-        Iterator<Book> itr= books.iterator();
+        Iterator<Book> itr = books.iterator();
         int length = 0;
-        while (itr.hasNext() && length <= 5){
-            Book book=itr.next();
-            highestReviewedBooks.put(book.getName(),book.getReviewNumber());
+        while (itr.hasNext() && length <= 5) {
+            Book book = itr.next();
+            highestReviewedBooks.put(book.getName(), book.getReviewNumber());
         }
         return ResponseEntity.ok().body(highestReviewedBooks);
     }

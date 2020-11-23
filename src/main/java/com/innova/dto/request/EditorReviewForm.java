@@ -1,6 +1,7 @@
 package com.innova.dto.request;
 
 import javax.validation.constraints.NotBlank;
+import java.util.Map;
 
 public class EditorReviewForm {
     @NotBlank
@@ -14,6 +15,9 @@ public class EditorReviewForm {
 
     @NotBlank
     private int editorScore;
+
+    @NotBlank
+    private Map<String,Integer> modes;
 
     public String getReviewText() {
         return reviewText;
@@ -47,5 +51,22 @@ public class EditorReviewForm {
         this.bookName = bookName;
     }
 
-    //TODO mode
+    public Map<String, Integer> getModes() {
+        return modes;
+    }
+
+    public void setModes(Map<String, Integer> modes) {
+        this.modes = modes;
+    }
+
+    @Override
+    public String toString() {
+        return "EditorReviewForm{" +
+                "bookId='" + bookId + '\'' +
+                ", bookName='" + bookName + '\'' +
+                ", reviewText='" + reviewText + '\'' +
+                ", editorScore=" + editorScore +
+                ", modes=" + modes +
+                '}';
+    }
 }

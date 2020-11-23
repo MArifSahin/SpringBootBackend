@@ -5,12 +5,14 @@ import java.util.AbstractMap;
 public class LastReviewedBookResponse {
     private int editorScore;
     private int userScore;
-    private AbstractMap.SimpleEntry editorReview;
+    private String editorReview;
+    private String editor;
 
-    public LastReviewedBookResponse(int editorScore, int userScore, AbstractMap.SimpleEntry editorReview) {
+    public LastReviewedBookResponse(int editorScore, int userScore, String editorReview, String editor) {
         this.editorScore = editorScore;
         this.userScore = userScore;
         this.editorReview = editorReview;
+        this.editor = editor;
     }
 
     public int getEditorScore() {
@@ -29,11 +31,19 @@ public class LastReviewedBookResponse {
         this.userScore = userScore;
     }
 
-    public AbstractMap.SimpleEntry getEditorReview() {
+    public String getEditorReview() {
         return editorReview;
     }
 
-    public void setEditorReview(AbstractMap.SimpleEntry editorReview) {
+    public void setEditorReview(String editorReview) {
         this.editorReview = editorReview;
+    }
+
+    public String getEditor() {
+        return editor;
+    }
+
+    public void setEditor(String editor) {
+        this.editor = editor;
     }
 }
