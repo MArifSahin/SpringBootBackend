@@ -4,18 +4,22 @@ import com.innova.constants.ErrorCodes;
 import com.innova.dto.request.EditorReviewForm;
 import com.innova.dto.request.UserReviewForm;
 import com.innova.dto.response.BookResponse;
+import com.innova.dto.response.LastReviewedBookResponse;
 import com.innova.exception.BadRequestException;
 import com.innova.model.*;
 import com.innova.repository.BookRepository;
 import com.innova.repository.BookReviewRepository;
 import com.innova.repository.UserRepository;
 import com.innova.service.UserServiceImpl;
+import com.innova.util.JsonUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -59,7 +63,6 @@ public class BookController {
                 BookResponse bookResponse = new BookResponse(
                         book.getName(), book.getEditorScore(), book.getUserScore(), editorReview, userReviews, book.getModes().createMap()
                 );
-                System.out.println(bookResponse);
                 return ResponseEntity.ok().body(bookResponse);
             } else {
                 throw new BadRequestException("No such book", ErrorCodes.NO_SUCH_BOOK);
@@ -68,7 +71,7 @@ public class BookController {
     }
 
     @PostMapping("/write-editor-review")
-    public ResponseEntity<?> writeEditorReview(@RequestBody EditorReviewForm editorReviewForm) {
+    public ResponseEntity<?> writeEditorReview(@RequestBody EditorReviewForm editorReviewForm) throws IOException {
         User user = userServiceImpl.getUserWithAuthentication(SecurityContextHolder.getContext().getAuthentication());
 
         if (!user.getRoles().iterator().next().getRole().equals(Roles.ROLE_EDITOR)) {
@@ -138,7 +141,7 @@ public class BookController {
     }
 
     @GetMapping("/last-reviews")
-    public ResponseEntity<Map<String,LastReviewedBookResponse>> lastReviews() {
+    public ResponseEntity<Map<String, LastReviewedBookResponse>> lastReviews() {
         List<BookReview> reviews = bookReviewRepository.findByOrderByReviewDateDesc();
         Map<String, LastReviewedBookResponse> bookReviews = new HashMap<>();
         Iterator<BookReview> itr = reviews.iterator();
