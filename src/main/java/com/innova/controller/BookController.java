@@ -46,9 +46,8 @@ public class BookController {
     @Autowired
     UserServiceImpl userServiceImpl;
 
-
-    @GetMapping("/")
-    public ResponseEntity<BookResponse> getBook(@RequestParam("bookId") String bookId) {
+    @GetMapping("/{bookId}")
+    public ResponseEntity<?> getBook(@PathVariable String bookId) {
         if (bookId == null) {
             return ResponseEntity.status(HttpStatus.SEE_OTHER).location(URI.create("https://book-review-backend.herokuapp.com/#/book")).build();
         } else {
@@ -56,18 +55,20 @@ public class BookController {
                 Book book = bookRepository.findById(bookId).get();
                 Iterator<BookReview> itr = book.getBookReviews().iterator();
                 Map<String, String> userReviews = new HashMap<>();
-                AbstractMap.SimpleEntry editorReview = null;
+                String editorReview = null;
+                String editor = null;
                 while (itr.hasNext()) {
                     BookReview itrReview = itr.next();
                     if (itrReview.isEditorReview()) {
-                        editorReview = new AbstractMap.SimpleEntry(itrReview.getUser().getUsername(), itrReview.getReviewText());
+                        editorReview = itrReview.getReviewText();
+                        editor = itrReview.getUser().getUsername();
                     } else {
                         userReviews.put(itrReview.getUser().getUsername(), itrReview.getReviewText());
                     }
                 }
 
                 BookResponse bookResponse = new BookResponse(
-                        book.getId(), book.getName(), book.getEditorScore(), book.getUserScore(), editorReview, userReviews, book.getModes().createMap()
+                        book.getId(), book.getName(), book.getEditorScore(), book.getUserScore(), editorReview, editor, userReviews, book.getModes().createMap()
                 );
                 return ResponseEntity.ok().body(bookResponse);
             } else {
@@ -154,7 +155,7 @@ public class BookController {
         BookReview review;
         int length = 0;
         LastReviewedBookResponse lastReviewedBookResponse = null;
-        while (itr.hasNext() && length <= 5) {
+        while (itr.hasNext() && length < 5) {
             review = itr.next();
             if (!bookReviews.containsKey(review.getBook().getName())) {
                 lastReviewedBookResponse = new LastReviewedBookResponse(review.getBook().getId(),
@@ -176,9 +177,10 @@ public class BookController {
         Map<String, Integer> highestRatedBooks = new LinkedHashMap<>();
         Iterator<Book> itr = books.iterator();
         int length = 0;
-        while (itr.hasNext() && length <= 5) {
+        while (itr.hasNext() && length < 5) {
             Book book = itr.next();
             highestRatedBooks.put(book.getName(), book.getUserScore());
+            length++;
         }
         return ResponseEntity.ok().body(highestRatedBooks);
     }
@@ -190,9 +192,10 @@ public class BookController {
         Map<String, Integer> highestReviewedBooks = new LinkedHashMap<>();
         Iterator<Book> itr = books.iterator();
         int length = 0;
-        while (itr.hasNext() && length <= 5) {
+        while (itr.hasNext() && length < 5) {
             Book book = itr.next();
             highestReviewedBooks.put(book.getName(), book.getReviewNumber());
+            length++;
         }
         return ResponseEntity.ok().body(highestReviewedBooks);
     }
