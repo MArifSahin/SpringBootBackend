@@ -251,13 +251,15 @@ class BookResource {
 
     this.writeEditorReview = data => this.axios.post('book/write-editor-review', data, this.axiosRequestConfig).then(r => r.data);
 
-    this.getBookContent = bookId => this.axios.get('book/?bookId=' + encodeURIComponent(bookId)).then(r => r.data);
+    this.getBookContent = bookId => this.axios.get('book/' + bookId, this.axiosRequestConfig).then(r => r.data);
 
     this.getLatestReviews = () => this.axios.get('book/last-reviews', this.axiosRequestConfig).then(r => r.data);
 
     this.getHighestRatedBooks = () => this.axios.get('book/highest-rated', this.axiosRequestConfig).then(r => r.data);
 
     this.getHighestReviewedBooks = () => this.axios.get('book/highest-reviewed', this.axiosRequestConfig).then(r => r.data);
+
+    this.getBooksOfYourMood = data => this.axios.post('book/find-book-of-mood', data, this.axiosRequestConfig).then(r => r.data);
   }
 
 }
@@ -351,7 +353,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _interceptors__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./interceptors */ "../../../libs/shared/api/src/lib/config/interceptors/index.ts");
 
 
-const baseUrl = 'https://book-review-backend.herokuapp.com';
+const baseUrl = 'http://localhost:8080';
 const defaultConfig = {
   baseURL: `${baseUrl}/api/`
 };
@@ -612,7 +614,7 @@ const refreshTokenInterceptor = (error, axios = axios__WEBPACK_IMPORTED_MODULE_1
 
   if (error.response.status === 401 && ((_error$response$data = error.response.data) === null || _error$response$data === void 0 ? void 0 : _error$response$data.error.toString()) === 'JWT Expired.') {
     return new Promise(resolve => {
-      axios.get('https://book-review-backend.herokuapp.com/api/auth/refresh-token', {
+      axios.get('http://localhost:8080/api/auth/refresh-token', {
         params: {
           token: Object(_internship_shared_utils__WEBPACK_IMPORTED_MODULE_0__["getRefreshToken"])()
         }
@@ -849,7 +851,7 @@ function useTemporary() {
 /*!*****************************************************************************!*\
   !*** C:/Users/mesahin/Desktop/ReactFrontend/libs/shared/types/src/index.ts ***!
   \*****************************************************************************/
-/*! exports provided: ACCESS_TOKEN, REFRESH_TOKEN, CAPTCHA_TOKEN, ROLE */
+/*! exports provided: ACCESS_TOKEN, REFRESH_TOKEN, CAPTCHA_TOKEN, ROLE, API_KEY */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -863,6 +865,8 @@ __webpack_require__.r(__webpack_exports__);
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ROLE", function() { return _lib__WEBPACK_IMPORTED_MODULE_0__["ROLE"]; });
 
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "API_KEY", function() { return _lib__WEBPACK_IMPORTED_MODULE_0__["API_KEY"]; });
+
 
 
 /***/ }),
@@ -871,7 +875,7 @@ __webpack_require__.r(__webpack_exports__);
 /*!*********************************************************************************!*\
   !*** C:/Users/mesahin/Desktop/ReactFrontend/libs/shared/types/src/lib/index.ts ***!
   \*********************************************************************************/
-/*! exports provided: ACCESS_TOKEN, REFRESH_TOKEN, CAPTCHA_TOKEN, ROLE */
+/*! exports provided: ACCESS_TOKEN, REFRESH_TOKEN, CAPTCHA_TOKEN, ROLE, API_KEY */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -885,6 +889,8 @@ __webpack_require__.r(__webpack_exports__);
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ROLE", function() { return _shared_types__WEBPACK_IMPORTED_MODULE_0__["ROLE"]; });
 
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "API_KEY", function() { return _shared_types__WEBPACK_IMPORTED_MODULE_0__["API_KEY"]; });
+
 
 
 /***/ }),
@@ -893,7 +899,7 @@ __webpack_require__.r(__webpack_exports__);
 /*!****************************************************************************************!*\
   !*** C:/Users/mesahin/Desktop/ReactFrontend/libs/shared/types/src/lib/shared-types.ts ***!
   \****************************************************************************************/
-/*! exports provided: ACCESS_TOKEN, REFRESH_TOKEN, CAPTCHA_TOKEN, ROLE */
+/*! exports provided: ACCESS_TOKEN, REFRESH_TOKEN, CAPTCHA_TOKEN, ROLE, API_KEY */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -902,10 +908,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "REFRESH_TOKEN", function() { return REFRESH_TOKEN; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "CAPTCHA_TOKEN", function() { return CAPTCHA_TOKEN; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ROLE", function() { return ROLE; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "API_KEY", function() { return API_KEY; });
 const ACCESS_TOKEN = 'access_token';
 const REFRESH_TOKEN = 'refresh_token';
 const CAPTCHA_TOKEN = 'captcha_token';
 const ROLE = 'role';
+const API_KEY = 'AIzaSyAek9Dpobv9VE_iEPovlbBY3e4yF35lMR8';
 
 /***/ }),
 
@@ -2064,6 +2072,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react_hook_form__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! react-hook-form */ "../../../node_modules/react-hook-form/dist/index.esm.js");
 /* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! axios */ "../../../node_modules/axios/index.js");
 /* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(axios__WEBPACK_IMPORTED_MODULE_6__);
+/* harmony import */ var _internship_shared_types__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! @internship/shared/types */ "../../../libs/shared/types/src/index.ts");
+
 
 
 
@@ -2077,7 +2087,7 @@ const Search = ({
   setSearchedItem
 }) => {
   const [book, setBook] = Object(react__WEBPACK_IMPORTED_MODULE_0__["useState"])("");
-  const [apiKey, setApiKey] = Object(react__WEBPACK_IMPORTED_MODULE_0__["useState"])("AIzaSyAek9Dpobv9VE_iEPovlbBY3e4yF35lMR8");
+  const [apiKey, setApiKey] = Object(react__WEBPACK_IMPORTED_MODULE_0__["useState"])(_internship_shared_types__WEBPACK_IMPORTED_MODULE_7__["API_KEY"]);
   const placeholder = 'Search ' + whichPage.toString();
   const {
     handleSubmit,
@@ -2670,7 +2680,7 @@ const Routes = (_ref) => {
   } = _ref,
       props = _objectWithoutProperties(_ref, ["children"]);
 
-  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_1__["HashRouter"], props, children, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_1__["Route"], {
+  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_1__["BrowserRouter"], props, children, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_1__["Route"], {
     exact: true,
     path: "/",
     component: _pages__WEBPACK_IMPORTED_MODULE_2__["MainPage"]
@@ -2824,7 +2834,6 @@ const BecomeAnEditor = () => {
   } = Object(_internship_shared_hooks__WEBPACK_IMPORTED_MODULE_4__["useTemporary"])();
 
   const onSubmit = values => {
-    console.log(values);
     dispatch(_internship_store_authentication__WEBPACK_IMPORTED_MODULE_8__["becomeEditorAsync"].request(values));
   };
 
@@ -2979,105 +2988,6 @@ const BecomeAnEditor = () => {
     type: "submit",
     disabled: !open
   }, "Send Application Form"))));
-};
-
-/***/ }),
-
-/***/ "./app/pages/Book.tsx":
-/*!****************************!*\
-  !*** ./app/pages/Book.tsx ***!
-  \****************************/
-/*! exports provided: Book */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Book", function() { return Book; });
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "../../../node_modules/react/index.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var react_bootstrap__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react-bootstrap */ "../../../node_modules/react-bootstrap/esm/index.js");
-/* harmony import */ var styled_components__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! styled-components */ "../../../node_modules/styled-components/dist/styled-components.browser.esm.js");
-/* harmony import */ var _internship_ui__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @internship/ui */ "../../../libs/ui/src/index.ts");
-/* harmony import */ var react_router_dom__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! react-router-dom */ "../../../node_modules/react-router-dom/esm/react-router-dom.js");
-/* harmony import */ var _internship_shared_api__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @internship/shared/api */ "../../../libs/shared/api/src/index.ts");
-
-
-
-
-
-
-const StyledApp = /*#__PURE__*/styled_components__WEBPACK_IMPORTED_MODULE_2__["default"].div.withConfig({
-  displayName: "Book__StyledApp",
-  componentId: "xdyaqb-0"
-})(["font-family:Georgia,serif;text-align:center;"]);
-const StyledRow = /*#__PURE__*/Object(styled_components__WEBPACK_IMPORTED_MODULE_2__["default"])(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Row"]).withConfig({
-  displayName: "Book__StyledRow",
-  componentId: "xdyaqb-1"
-})(["margin:0px auto;padding:50px 0px 50px 0px;border-bottom:1px ridge;min-height:400px;"]);
-const StyledJumbotron = /*#__PURE__*/Object(styled_components__WEBPACK_IMPORTED_MODULE_2__["default"])(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Jumbotron"]).withConfig({
-  displayName: "Book__StyledJumbotron",
-  componentId: "xdyaqb-2"
-})(["fluid;padding:70px 30px 70px 30px;margin:0px;background:gray;color:floralwhite;"]);
-const Container = /*#__PURE__*/styled_components__WEBPACK_IMPORTED_MODULE_2__["default"].div.withConfig({
-  displayName: "Book__Container",
-  componentId: "xdyaqb-3"
-})(["display:inline-block;padding:4.5rem;"]);
-const StyledCard = /*#__PURE__*/Object(styled_components__WEBPACK_IMPORTED_MODULE_2__["default"])(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Card"]).withConfig({
-  displayName: "Book__StyledCard",
-  componentId: "xdyaqb-4"
-})(["min-height:400px;background:gray;"]);
-const Book = () => {
-  const [searchResults, setSearchResults] = Object(react__WEBPACK_IMPORTED_MODULE_0__["useState"])([]);
-  const [book, setSearchedItem] = Object(react__WEBPACK_IMPORTED_MODULE_0__["useState"])('');
-  const [latestReviewedBooks, setLatestReviewedBooks] = Object(react__WEBPACK_IMPORTED_MODULE_0__["useState"])(null);
-  const [latestReviewedBooksLoaded, setLatestReviewedBooksLoaded] = Object(react__WEBPACK_IMPORTED_MODULE_0__["useState"])(false);
-  Object(react__WEBPACK_IMPORTED_MODULE_0__["useEffect"])(() => {
-    _internship_shared_api__WEBPACK_IMPORTED_MODULE_5__["api"].book.getLatestReviews().then(response => {
-      setLatestReviewedBooks(response);
-      setLatestReviewedBooksLoaded(true);
-    }).catch(e => console.error(e));
-  }, []);
-  let showLatestReviewedBook = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Spinner"], {
-    animation: "border"
-  });
-
-  if (latestReviewedBooksLoaded) {
-    //TODO add link with bookId
-    console.log(latestReviewedBooks);
-    showLatestReviewedBook = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["ListGroup"], null, Object.keys(latestReviewedBooks).map((d, key) => /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["ListGroup"].Item, {
-      variant: "danger",
-      key: key,
-      className: "ml-4"
-    }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h4", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("b", null, d)), "Editor Score:", /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Badge"], {
-      variant: "info"
-    }, latestReviewedBooks[d].editorScore), "User Score:", /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Badge"], {
-      variant: "info"
-    }, latestReviewedBooks[d].userScore), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("p", null, latestReviewedBooks[d].editorReview), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("footer", null, latestReviewedBooks[d].editor))));
-  }
-
-  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(StyledApp, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(StyledJumbotron, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(Container, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Row"], null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Col"], null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h1", null, "This is a book page"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("p", null, "This is a paragraph that describes book page"))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_internship_ui__WEBPACK_IMPORTED_MODULE_3__["Search"], {
-    whichPage: "book",
-    setSearchResults: setSearchResults,
-    setSearchedItem: setSearchedItem
-  }), searchResults.map(book => {
-    var _book$volumeInfo, _book$volumeInfo$imag, _book$volumeInfo2, _book$volumeInfo3;
-
-    return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Row"], null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Media"], null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Image"], {
-      className: "d-flex mr-3 img-thumbnail align-self-center",
-      src: (_book$volumeInfo = book.volumeInfo) === null || _book$volumeInfo === void 0 ? void 0 : (_book$volumeInfo$imag = _book$volumeInfo.imageLinks) === null || _book$volumeInfo$imag === void 0 ? void 0 : _book$volumeInfo$imag.thumbnail,
-      alt: book.title
-    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Media"].Body, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("header", {
-      className: "d-flex mr-3 align-self-center"
-    }, (_book$volumeInfo2 = book.volumeInfo) === null || _book$volumeInfo2 === void 0 ? void 0 : _book$volumeInfo2.title), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("i", null, "Author: ", (_book$volumeInfo3 = book.volumeInfo) === null || _book$volumeInfo3 === void 0 ? void 0 : _book$volumeInfo3.authors), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("i", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_4__["Link"], {
-      to: {
-        pathname: '/reviewPage',
-        data: {
-          book
-        }
-      },
-      type: "button"
-    }, "Click to see the reviews"))))));
-  }))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(Container, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(StyledRow, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Col"], null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(StyledCard, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h3", null, "Find book of your mood")))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(StyledRow, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(Container, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h3", null, "Latest Reviewed Books"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(StyledRow, null, showLatestReviewedBook)))));
 };
 
 /***/ }),
@@ -3269,7 +3179,7 @@ const Login = () => {
     className: "mb-3 mt-3"
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement(StyledAnchorTag, {
     className: "btn btn-outline-dark alert-dismissible",
-    href: "https://book-review-backend.herokuapp.com/oauth2/authorize/google?redirect_uri=https://book-review-backend.herokuapp.com/auth"
+    href: "http://localhost:8080/oauth2/authorize/google?redirect_uri=https://http://localhost:4200/auth"
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement(_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_8__["FontAwesomeIcon"], {
     icon: _fortawesome_free_brands_svg_icons__WEBPACK_IMPORTED_MODULE_9__["faGoogle"],
     style: {
@@ -3864,6 +3774,297 @@ const Register = () => {
 
 /***/ }),
 
+/***/ "./app/pages/bookPage/Book.tsx":
+/*!*************************************!*\
+  !*** ./app/pages/bookPage/Book.tsx ***!
+  \*************************************/
+/*! exports provided: Book */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Book", function() { return Book; });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "../../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var react_show_more_text__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react-show-more-text */ "../../../node_modules/react-show-more-text/lib/ShowMoreText.js");
+/* harmony import */ var react_show_more_text__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react_show_more_text__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var react_bootstrap__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react-bootstrap */ "../../../node_modules/react-bootstrap/esm/index.js");
+/* harmony import */ var styled_components__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! styled-components */ "../../../node_modules/styled-components/dist/styled-components.browser.esm.js");
+/* harmony import */ var _internship_shared_api__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @internship/shared/api */ "../../../libs/shared/api/src/index.ts");
+/* harmony import */ var _FindBooksOfYourMood__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./FindBooksOfYourMood */ "./app/pages/bookPage/FindBooksOfYourMood.tsx");
+/* harmony import */ var react_router_dom__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! react-router-dom */ "../../../node_modules/react-router-dom/esm/react-router-dom.js");
+/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! axios */ "../../../node_modules/axios/index.js");
+/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_7___default = /*#__PURE__*/__webpack_require__.n(axios__WEBPACK_IMPORTED_MODULE_7__);
+/* harmony import */ var _internship_ui__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! @internship/ui */ "../../../libs/ui/src/index.ts");
+/* harmony import */ var _internship_shared_types__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! @internship/shared/types */ "../../../libs/shared/types/src/index.ts");
+
+
+
+
+
+
+
+
+
+
+const StyledApp = /*#__PURE__*/styled_components__WEBPACK_IMPORTED_MODULE_3__["default"].div.withConfig({
+  displayName: "Book__StyledApp",
+  componentId: "sc-1xx2f6p-0"
+})(["font-family:Georgia,serif;text-align:center;"]);
+const StyledRow = /*#__PURE__*/Object(styled_components__WEBPACK_IMPORTED_MODULE_3__["default"])(react_bootstrap__WEBPACK_IMPORTED_MODULE_2__["Row"]).withConfig({
+  displayName: "Book__StyledRow",
+  componentId: "sc-1xx2f6p-1"
+})(["margin:0px auto;padding:50px 0px 50px 0px;border-bottom:1px ridge;min-height:400px;"]);
+const StyledJumbotron = /*#__PURE__*/Object(styled_components__WEBPACK_IMPORTED_MODULE_3__["default"])(react_bootstrap__WEBPACK_IMPORTED_MODULE_2__["Jumbotron"]).withConfig({
+  displayName: "Book__StyledJumbotron",
+  componentId: "sc-1xx2f6p-2"
+})(["fluid;padding:70px 30px 70px 30px;margin:0px;background:gray;color:floralwhite;"]);
+const Container = /*#__PURE__*/styled_components__WEBPACK_IMPORTED_MODULE_3__["default"].div.withConfig({
+  displayName: "Book__Container",
+  componentId: "sc-1xx2f6p-3"
+})(["display:inline-block;padding:4.5rem;"]);
+const StyledCard = /*#__PURE__*/Object(styled_components__WEBPACK_IMPORTED_MODULE_3__["default"])(react_bootstrap__WEBPACK_IMPORTED_MODULE_2__["Card"]).withConfig({
+  displayName: "Book__StyledCard",
+  componentId: "sc-1xx2f6p-4"
+})(["min-height:400px;background:gray;"]);
+const Book = () => {
+  const history = Object(react_router_dom__WEBPACK_IMPORTED_MODULE_6__["useHistory"])();
+  const [apiKey, setApiKey] = Object(react__WEBPACK_IMPORTED_MODULE_0__["useState"])(_internship_shared_types__WEBPACK_IMPORTED_MODULE_9__["API_KEY"]);
+  const [searchResults, setSearchResults] = Object(react__WEBPACK_IMPORTED_MODULE_0__["useState"])([]);
+  const [book, setSearchedItem] = Object(react__WEBPACK_IMPORTED_MODULE_0__["useState"])('');
+  const [latestReviewedBooks, setLatestReviewedBooks] = Object(react__WEBPACK_IMPORTED_MODULE_0__["useState"])(null);
+  const [latestReviewedBooksLoaded, setLatestReviewedBooksLoaded] = Object(react__WEBPACK_IMPORTED_MODULE_0__["useState"])(false);
+  Object(react__WEBPACK_IMPORTED_MODULE_0__["useEffect"])(() => {
+    _internship_shared_api__WEBPACK_IMPORTED_MODULE_4__["api"].book.getLatestReviews().then(response => {
+      setLatestReviewedBooks(response);
+      setLatestReviewedBooksLoaded(true);
+    }).catch(e => console.error(e));
+  }, []);
+  let showLatestReviewedBook = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_2__["Spinner"], {
+    animation: "border"
+  });
+
+  const onClick = bookName => {
+    axios__WEBPACK_IMPORTED_MODULE_7___default.a.get(`https://www.googleapis.com/books/v1/volumes?q=${bookName}
+      &key=${apiKey}&maxResults=1&orderBy=relevance&printType=books&projection=lite`).then(data => {
+      console.log(data.data.items);
+      {
+        data.data.items.map(book => history.push('/reviewPage', {
+          data: book
+        }));
+      }
+    });
+  };
+
+  if (latestReviewedBooksLoaded) {
+    showLatestReviewedBook = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_2__["ListGroup"], null, Object.keys(latestReviewedBooks).map((d, key) => /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_2__["ListGroup"].Item, {
+      variant: "secondary",
+      key: key,
+      className: "ml-4"
+    }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h4", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("b", null, d), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_2__["Button"], {
+      className: "float-right",
+      onClick: () => onClick(d),
+      variant: "outline-success"
+    }, "see full review")), "Editor Score:", /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_2__["Badge"], {
+      variant: "info"
+    }, latestReviewedBooks[d].editorScore), "User Score:", /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_2__["Badge"], {
+      variant: "info"
+    }, latestReviewedBooks[d].userScore), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_show_more_text__WEBPACK_IMPORTED_MODULE_1___default.a
+    /* Default options */
+    , {
+      lines: 5,
+      more: "Show more",
+      less: "Show less"
+    }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("p", null, latestReviewedBooks[d].editorReview)), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("footer", {
+      className: "blockquote-footer float-right"
+    }, "Wrote by ", latestReviewedBooks[d].editor))));
+  }
+
+  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(StyledApp, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(StyledJumbotron, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(Container, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_2__["Row"], null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_2__["Col"], null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h1", null, "BOOK"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("p", null, "What is your mood's book?", /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), "Book reviews and more..."))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_internship_ui__WEBPACK_IMPORTED_MODULE_8__["Search"], {
+    whichPage: "book",
+    setSearchResults: setSearchResults,
+    setSearchedItem: setSearchedItem
+  }), searchResults.map(book => {
+    var _book$volumeInfo, _book$volumeInfo$imag, _book$volumeInfo2, _book$volumeInfo3;
+
+    return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_2__["Row"], null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_2__["Media"], null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_2__["Image"], {
+      className: "d-flex mr-3 img-thumbnail align-self-center",
+      src: (_book$volumeInfo = book.volumeInfo) === null || _book$volumeInfo === void 0 ? void 0 : (_book$volumeInfo$imag = _book$volumeInfo.imageLinks) === null || _book$volumeInfo$imag === void 0 ? void 0 : _book$volumeInfo$imag.thumbnail,
+      alt: book.title
+    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_2__["Media"].Body, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("header", {
+      className: "d-flex mr-3 align-self-center"
+    }, (_book$volumeInfo2 = book.volumeInfo) === null || _book$volumeInfo2 === void 0 ? void 0 : _book$volumeInfo2.title), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("i", null, "Author: ", (_book$volumeInfo3 = book.volumeInfo) === null || _book$volumeInfo3 === void 0 ? void 0 : _book$volumeInfo3.authors), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("i", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_6__["Link"], {
+      to: {
+        pathname: '/reviewPage',
+        state: {
+          data: book
+        }
+      },
+      type: "button"
+    }, "Click to see the reviews"))))));
+  }))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(Container, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(StyledRow, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_2__["Col"], null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(StyledCard, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h3", null, "Find books of your mood"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_FindBooksOfYourMood__WEBPACK_IMPORTED_MODULE_5__["FindBooksOfYourMood"], null)))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(StyledRow, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(Container, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h3", null, "Latest Reviewed Books"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(StyledRow, null, showLatestReviewedBook)))));
+};
+
+/***/ }),
+
+/***/ "./app/pages/bookPage/FindBooksOfYourMood.tsx":
+/*!****************************************************!*\
+  !*** ./app/pages/bookPage/FindBooksOfYourMood.tsx ***!
+  \****************************************************/
+/*! exports provided: FindBooksOfYourMood */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "FindBooksOfYourMood", function() { return FindBooksOfYourMood; });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "../../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var react_bootstrap__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react-bootstrap */ "../../../node_modules/react-bootstrap/esm/index.js");
+/* harmony import */ var react_bootstrap_range_slider__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react-bootstrap-range-slider */ "../../../node_modules/react-bootstrap-range-slider/dist/index.js");
+/* harmony import */ var react_bootstrap_range_slider__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(react_bootstrap_range_slider__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var react_hook_form__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react-hook-form */ "../../../node_modules/react-hook-form/dist/index.esm.js");
+/* harmony import */ var _internship_ui__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @internship/ui */ "../../../libs/ui/src/index.ts");
+/* harmony import */ var styled_components__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! styled-components */ "../../../node_modules/styled-components/dist/styled-components.browser.esm.js");
+/* harmony import */ var _internship_shared_api__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! @internship/shared/api */ "../../../libs/shared/api/src/index.ts");
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
+
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+
+
+
+
+
+
+
+const StyledApp = /*#__PURE__*/styled_components__WEBPACK_IMPORTED_MODULE_5__["default"].div.withConfig({
+  displayName: "FindBooksOfYourMood__StyledApp",
+  componentId: "olm3a9-0"
+})(["font-family:Georgia,serif;text-align:center;"]);
+const FindBooksOfYourMood = () => {
+  const [books, setBooks] = Object(react__WEBPACK_IMPORTED_MODULE_0__["useState"])();
+  const [booksLoaded, setBooksLoaded] = Object(react__WEBPACK_IMPORTED_MODULE_0__["useState"])(false);
+  const {
+    handleSubmit,
+    register
+  } = Object(react_hook_form__WEBPACK_IMPORTED_MODULE_3__["useForm"])();
+  const [moods, setMoods] = Object(react__WEBPACK_IMPORTED_MODULE_0__["useState"])({
+    drama: 0,
+    fun: 0,
+    action: 0,
+    adventure: 0,
+    romance: 0,
+    thriller: 0,
+    horror: 0
+  });
+  let showBooks = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("span", null);
+
+  const onSubmit = values => {
+    showBooks = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Spinner"], {
+      animation: "border"
+    });
+    values = moods; //TODO make this request async
+
+    _internship_shared_api__WEBPACK_IMPORTED_MODULE_6__["api"].book.getBooksOfYourMood(values).then(response => {
+      setBooks(response);
+      setBooksLoaded(true);
+    }).catch(e => console.error(e));
+  };
+
+  if (booksLoaded) {
+    showBooks = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["ListGroup"], null, books.map(book => /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["ListGroup"].Item, {
+      variant: "danger",
+      key: book.bookName,
+      className: "ml-4"
+    }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h4", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("b", null, book.bookName)))));
+  }
+
+  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(StyledApp, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Form"], {
+    onSubmit: handleSubmit(onSubmit)
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Form"].Group, {
+    controlId: "findBooksOfYourMood"
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Form"].Label, null, "Please select below the levels you want to experience while reading"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Row"], null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Col"], null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("i", null, "Drama: "), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap_range_slider__WEBPACK_IMPORTED_MODULE_2___default.a, {
+    name: "dramaScore",
+    ref: register({
+      required: true
+    }),
+    onChange: changeEvent => setMoods(_objectSpread(_objectSpread({}, moods), {}, {
+      drama: changeEvent.target.value
+    })),
+    step: 20,
+    variant: "danger"
+  }))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Row"], null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Col"], null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("i", null, "Fun: "), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap_range_slider__WEBPACK_IMPORTED_MODULE_2___default.a, {
+    name: "funScore",
+    ref: register({
+      required: true
+    }),
+    onChange: changeEvent => setMoods(_objectSpread(_objectSpread({}, moods), {}, {
+      fun: changeEvent.target.value
+    })),
+    step: 20,
+    variant: "danger"
+  }))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Row"], null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Col"], null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("i", null, "Action: "), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap_range_slider__WEBPACK_IMPORTED_MODULE_2___default.a, {
+    name: "actionScore",
+    ref: register({
+      required: true
+    }),
+    onChange: changeEvent => setMoods(_objectSpread(_objectSpread({}, moods), {}, {
+      action: changeEvent.target.value
+    })),
+    step: 20,
+    variant: "danger"
+  }))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Row"], null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Col"], null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("i", null, "Adventure: "), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap_range_slider__WEBPACK_IMPORTED_MODULE_2___default.a, {
+    name: "adventureScore",
+    ref: register({
+      required: true
+    }),
+    onChange: changeEvent => setMoods(_objectSpread(_objectSpread({}, moods), {}, {
+      adventure: changeEvent.target.value
+    })),
+    step: 20,
+    variant: "danger"
+  }))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Row"], null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Col"], null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("i", null, "Romance: "), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap_range_slider__WEBPACK_IMPORTED_MODULE_2___default.a, {
+    name: "romanceScore",
+    ref: register({
+      required: true
+    }),
+    onChange: changeEvent => setMoods(_objectSpread(_objectSpread({}, moods), {}, {
+      romance: changeEvent.target.value
+    })),
+    step: 20,
+    variant: "danger"
+  }))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Row"], null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Col"], null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("i", null, "Horror: "), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap_range_slider__WEBPACK_IMPORTED_MODULE_2___default.a, {
+    name: "horrorScore",
+    ref: register({
+      required: true
+    }),
+    onChange: changeEvent => setMoods(_objectSpread(_objectSpread({}, moods), {}, {
+      horror: changeEvent.target.value
+    })),
+    step: 20,
+    variant: "danger"
+  }))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Row"], null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Col"], null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("i", null, "Thriller: "), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap_range_slider__WEBPACK_IMPORTED_MODULE_2___default.a, {
+    name: "thrillerScore",
+    ref: register({
+      required: true
+    }),
+    onChange: changeEvent => setMoods(_objectSpread(_objectSpread({}, moods), {}, {
+      thriller: changeEvent.target.value
+    })),
+    step: 20,
+    variant: "danger"
+  })))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Row"], {
+    className: "justify-content-center"
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_internship_ui__WEBPACK_IMPORTED_MODULE_4__["Button"], {
+    type: "submit",
+    value: "findBooksOfYourMood"
+  }, "Submit"))), showBooks);
+};
+
+/***/ }),
+
 /***/ "./app/pages/bookReviewPageComponents/BookReviewPage.tsx":
 /*!***************************************************************!*\
   !*** ./app/pages/bookReviewPageComponents/BookReviewPage.tsx ***!
@@ -3923,31 +4124,49 @@ const StyledContainer = /*#__PURE__*/Object(styled_components__WEBPACK_IMPORTED_
   componentId: "m21vsm-6"
 })(["fluid:md;display:inline-block;padding:1rem;"]);
 const BookReviewPage = props => {
-  var _book$volumeInfo, _book$volumeInfo$imag, _book$volumeInfo2, _book$volumeInfo3;
+  var _book$volumeInfo, _book$volumeInfo$imag, _book$volumeInfo2, _book$volumeInfo3, _book$volumeInfo4, _book$volumeInfo4$ima, _book$volumeInfo5, _book$volumeInfo6;
 
   const history = Object(react_router_dom__WEBPACK_IMPORTED_MODULE_2__["useHistory"])();
   const {
     isErrorRequired,
     isSuccessRequired
   } = Object(_internship_shared_hooks__WEBPACK_IMPORTED_MODULE_5__["useTemporary"])();
+  const {
+    role
+  } = Object(_internship_shared_hooks__WEBPACK_IMPORTED_MODULE_5__["useGetRole"])();
   const [bookContent, setBookContent] = Object(react__WEBPACK_IMPORTED_MODULE_0__["useState"])(null);
-  const bookRedirect = props.location.data ? null : /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_2__["Redirect"], {
-    to: "/book"
-  });
+  const [bookLoaded, setBookLoaded] = Object(react__WEBPACK_IMPORTED_MODULE_0__["useState"])(false);
+  let book;
 
-  if (Object(util__WEBPACK_IMPORTED_MODULE_4__["isNullOrUndefined"])(props.location.data)) {
+  if (Object(util__WEBPACK_IMPORTED_MODULE_4__["isNullOrUndefined"])(props.location.data) && Object(util__WEBPACK_IMPORTED_MODULE_4__["isNullOrUndefined"])(props.location.state.data)) {
     history.push('/book');
     return null;
   }
 
-  const book = props.location.data.book;
+  props.location.data ? book = props.location.data.book : book = props.location.state.data;
   Object(react__WEBPACK_IMPORTED_MODULE_0__["useEffect"])(() => {
-    console.log('BOOK ID: ' + book.id);
-    _internship_shared_api__WEBPACK_IMPORTED_MODULE_8__["api"].book.getBookContent(book.id).then(r => setBookContent(r)).catch(e => console.error(e));
-  });
-  console.log(bookContent); //TODO hard coded
+    _internship_shared_api__WEBPACK_IMPORTED_MODULE_8__["api"].book.getBookContent(book.id).then(r => {
+      setBookContent(r);
+      setBookLoaded(true);
+    }).catch(e => console.error(e));
+  }, []);
+  let showWriteEditorReview = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("span", null, "-");
 
-  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(StyledApp, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(StyledContainer, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(StyledRowContent, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Col"], {
+  if (role === 'ROLE_EDITOR') {
+    showWriteEditorReview = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_WriteEditorReview__WEBPACK_IMPORTED_MODULE_7__["WriteEditorReview"], {
+      book: book
+    });
+  }
+
+  let showWriteUserReview = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("span", null, "-");
+
+  if (role === 'ROLE_USER') {
+    showWriteUserReview = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_WriteUserReview__WEBPACK_IMPORTED_MODULE_6__["WriteUserReview"], {
+      book: book
+    });
+  }
+
+  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(StyledApp, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(StyledContainer, null, bookLoaded ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(StyledRowContent, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Col"], {
     sm: 3
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Card"], {
     bg: "secondary",
@@ -3960,27 +4179,64 @@ const BookReviewPage = props => {
     className: "d-flex mr-3 align-self-center"
   }, (_book$volumeInfo2 = book.volumeInfo) === null || _book$volumeInfo2 === void 0 ? void 0 : _book$volumeInfo2.title), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Card"].Text, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("i", null, "Author: ", (_book$volumeInfo3 = book.volumeInfo) === null || _book$volumeInfo3 === void 0 ? void 0 : _book$volumeInfo3.authors), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("i", null, "Editor Score:", /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Badge"], {
     variant: "info"
-  }, "90")), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("i", null, "User Score:", /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Badge"], {
+  }, bookContent.editorScore)), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("i", null, "User Score:", /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Badge"], {
     variant: "info"
-  }, "80")), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("i", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("b", null, "Mode of the book")), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("i", null, "Drama"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Badge"], {
+  }, bookContent.userScore)), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("i", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("b", null, "Mode of the book")), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("i", null, "Drama"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Badge"], {
     variant: "info"
-  }, "90"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("i", null, "Comedy"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Badge"], {
+  }, bookContent.modes.drama), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("i", null, "Fun"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Badge"], {
     variant: "info"
-  }, "90"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("i", null, "Romance"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Badge"], {
+  }, bookContent.modes.fun), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("i", null, "Romance"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Badge"], {
     variant: "info"
-  }, "90"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("i", null, "Thriller"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Badge"], {
+  }, bookContent.modes.romance), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("i", null, "Thriller"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Badge"], {
     variant: "info"
-  }, "90"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("i", null, "Action"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Badge"], {
+  }, bookContent.modes.thriller), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("i", null, "Action"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Badge"], {
     variant: "info"
-  }, "90"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("i", null, "Adventure"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Badge"], {
+  }, bookContent.modes.action), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("i", null, "Adventure"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Badge"], {
     variant: "info"
-  }, "90"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("i", null, "Horror"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Badge"], {
+  }, bookContent.modes.adventure), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("i", null, "Horror"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Badge"], {
     variant: "info"
-  }, "90"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null))))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Col"], null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h1", null, "Editor Review"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("p", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_WriteEditorReview__WEBPACK_IMPORTED_MODULE_7__["WriteEditorReview"], {
+  }, bookContent.modes.horror), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null))))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Col"], null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h1", null, "Editor Review"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), bookContent.editorReview ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("p", null, bookContent.editorReview), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("footer", {
+    className: "blockquote-footer float-right"
+  }, bookContent.editor, " wrote this review")) : showWriteEditorReview)), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(StyledRowUserReviews, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(StyledContainer, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(StyledRow, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h2", null, "User Reviews"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), role === 'ROLE_USER' ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_WriteUserReview__WEBPACK_IMPORTED_MODULE_6__["WriteUserReview"], {
     book: book
-  })))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(StyledRowUserReviews, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(StyledContainer, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(StyledRow, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h2", null, "User Reviews"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_WriteUserReview__WEBPACK_IMPORTED_MODULE_6__["WriteUserReview"], {
-    book: book
-  }))))));
+  }) : null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["ListGroup"], null, Object.keys(bookContent.userReviews).map((d, key) => /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["ListGroup"].Item, {
+    variant: "success",
+    key: key,
+    className: "ml-4"
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("p", null, bookContent.userReviews[d]), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("footer", {
+    className: "blockquote-footer float-right"
+  }, d)))))))) : /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Alert"], {
+    variant: "secondary"
+  }, "There are no reviews for this book"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(StyledRowContent, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Col"], {
+    sm: 3
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Card"], {
+    bg: "secondary",
+    className: "mb-2"
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Card"].Img, {
+    className: "d-flex mr-3 img-thumbnail align-self-center",
+    src: (_book$volumeInfo4 = book.volumeInfo) === null || _book$volumeInfo4 === void 0 ? void 0 : (_book$volumeInfo4$ima = _book$volumeInfo4.imageLinks) === null || _book$volumeInfo4$ima === void 0 ? void 0 : _book$volumeInfo4$ima.thumbnail,
+    alt: book.title
+  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Card"].Body, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Card"].Title, {
+    className: "d-flex mr-3 align-self-center"
+  }, (_book$volumeInfo5 = book.volumeInfo) === null || _book$volumeInfo5 === void 0 ? void 0 : _book$volumeInfo5.title), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Card"].Text, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("i", null, "Author: ", (_book$volumeInfo6 = book.volumeInfo) === null || _book$volumeInfo6 === void 0 ? void 0 : _book$volumeInfo6.authors), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("i", null, "Editor Score:", /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Badge"], {
+    variant: "info"
+  }, "-")), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("i", null, "User Score:", /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Badge"], {
+    variant: "info"
+  }, "-")), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("i", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("b", null, "Mode of the book")), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("i", null, "Drama"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Badge"], {
+    variant: "info"
+  }, "-"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("i", null, "Comedy"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Badge"], {
+    variant: "info"
+  }, "-"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("i", null, "Romance"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Badge"], {
+    variant: "info"
+  }, "-"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("i", null, "Thriller"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Badge"], {
+    variant: "info"
+  }, "-"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("i", null, "Action"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Badge"], {
+    variant: "info"
+  }, "-"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("i", null, "Adventure"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Badge"], {
+    variant: "info"
+  }, "-"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("i", null, "Horror"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Badge"], {
+    variant: "info"
+  }, "-"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null))))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Col"], null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h1", null, "Editor Review"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), showWriteEditorReview)), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(StyledRowUserReviews, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(StyledContainer, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(StyledRow, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h2", null, "User Reviews"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), showWriteUserReview))))));
 };
 
 /***/ }),
@@ -4006,6 +4262,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _internship_shared_hooks__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! @internship/shared/hooks */ "../../../libs/shared/hooks/src/index.ts");
 /* harmony import */ var styled_components__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! styled-components */ "../../../node_modules/styled-components/dist/styled-components.browser.esm.js");
 /* harmony import */ var _internship_shared_api__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! @internship/shared/api */ "../../../libs/shared/api/src/index.ts");
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
+
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
 
 
 
@@ -4031,7 +4293,7 @@ const WriteEditorReview = props => {
     isSuccessRequired
   } = Object(_internship_shared_hooks__WEBPACK_IMPORTED_MODULE_6__["useTemporary"])();
   const [editorScore, setEditorScore] = Object(react__WEBPACK_IMPORTED_MODULE_0__["useState"])(0);
-  const modes = {
+  const [moods, setMoods] = Object(react__WEBPACK_IMPORTED_MODULE_0__["useState"])({
     drama: 0,
     fun: 0,
     action: 0,
@@ -4039,15 +4301,14 @@ const WriteEditorReview = props => {
     romance: 0,
     thriller: 0,
     horror: 0
-  };
+  });
   const book = props.book;
 
   const onSubmit = values => {
-    values.modes = modes;
+    values.moods = moods;
     values.bookId = book.id;
     values.bookName = book.volumeInfo.title;
-    values.editorScore = editorScore;
-    console.log(values); //TODO make this request async
+    values.editorScore = editorScore; //TODO make this request async
     // dispatch(writeEditorReviewAsync.request(values));
 
     _internship_shared_api__WEBPACK_IMPORTED_MODULE_8__["api"].book.writeEditorReview(values).catch(e => console.error(e));
@@ -4064,15 +4325,18 @@ const WriteEditorReview = props => {
       required: true
     }),
     Label: "Editor Score",
+    value: editorScore,
     onChange: changeEvent => setEditorScore(changeEvent.target.value),
     step: 5,
     variant: "danger"
-  })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Form"].Label, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("b", null, "Book Modes")), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Row"], null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Col"], null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("i", null, "Drama: "), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap_range_slider__WEBPACK_IMPORTED_MODULE_2___default.a, {
+  })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Form"].Label, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("b", null, "Book moods")), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Row"], null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Col"], null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("i", null, "Drama: "), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap_range_slider__WEBPACK_IMPORTED_MODULE_2___default.a, {
     name: "dramaScore",
     ref: register({
       required: true
     }),
-    onChange: changeEvent => modes.drama = changeEvent.target.value,
+    onChange: changeEvent => setMoods(_objectSpread(_objectSpread({}, moods), {}, {
+      drama: changeEvent.target.value
+    })),
     step: 20,
     variant: "danger"
   }))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Row"], null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Col"], null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("i", null, "Fun: "), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap_range_slider__WEBPACK_IMPORTED_MODULE_2___default.a, {
@@ -4080,7 +4344,9 @@ const WriteEditorReview = props => {
     ref: register({
       required: true
     }),
-    onChange: changeEvent => modes.fun = changeEvent.target.value,
+    onChange: changeEvent => setMoods(_objectSpread(_objectSpread({}, moods), {}, {
+      fun: changeEvent.target.value
+    })),
     step: 20,
     variant: "danger"
   }))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Row"], null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Col"], null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("i", null, "Action: "), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap_range_slider__WEBPACK_IMPORTED_MODULE_2___default.a, {
@@ -4088,7 +4354,9 @@ const WriteEditorReview = props => {
     ref: register({
       required: true
     }),
-    onChange: changeEvent => modes.action = changeEvent.target.value,
+    onChange: changeEvent => setMoods(_objectSpread(_objectSpread({}, moods), {}, {
+      action: changeEvent.target.value
+    })),
     step: 20,
     variant: "danger"
   }))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Row"], null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Col"], null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("i", null, "Adventure: "), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap_range_slider__WEBPACK_IMPORTED_MODULE_2___default.a, {
@@ -4096,7 +4364,9 @@ const WriteEditorReview = props => {
     ref: register({
       required: true
     }),
-    onChange: changeEvent => modes.adventure = changeEvent.target.value,
+    onChange: changeEvent => setMoods(_objectSpread(_objectSpread({}, moods), {}, {
+      adventure: changeEvent.target.value
+    })),
     step: 20,
     variant: "danger"
   }))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Row"], null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Col"], null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("i", null, "Romance: "), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap_range_slider__WEBPACK_IMPORTED_MODULE_2___default.a, {
@@ -4104,7 +4374,9 @@ const WriteEditorReview = props => {
     ref: register({
       required: true
     }),
-    onChange: changeEvent => modes.romance = changeEvent.target.value,
+    onChange: changeEvent => setMoods(_objectSpread(_objectSpread({}, moods), {}, {
+      romance: changeEvent.target.value
+    })),
     step: 20,
     variant: "danger"
   }))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Row"], null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Col"], null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("i", null, "Horror: "), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap_range_slider__WEBPACK_IMPORTED_MODULE_2___default.a, {
@@ -4112,7 +4384,9 @@ const WriteEditorReview = props => {
     ref: register({
       required: true
     }),
-    onChange: changeEvent => modes.horror = changeEvent.target.value,
+    onChange: changeEvent => setMoods(_objectSpread(_objectSpread({}, moods), {}, {
+      horror: changeEvent.target.value
+    })),
     step: 20,
     variant: "danger"
   }))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Row"], null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Col"], null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("i", null, "Thriller: "), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap_range_slider__WEBPACK_IMPORTED_MODULE_2___default.a, {
@@ -4120,7 +4394,9 @@ const WriteEditorReview = props => {
     ref: register({
       required: true
     }),
-    onChange: changeEvent => modes.thriller = changeEvent.target.value,
+    onChange: changeEvent => setMoods(_objectSpread(_objectSpread({}, moods), {}, {
+      thriller: changeEvent.target.value
+    })),
     step: 20,
     variant: "danger"
   })))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Form"].Group, {
@@ -4586,8 +4862,8 @@ __webpack_require__.r(__webpack_exports__);
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MailErrorPage", function() { return _mailActivation__WEBPACK_IMPORTED_MODULE_7__["MailErrorPage"]; });
 
-/* harmony import */ var _Book__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./Book */ "./app/pages/Book.tsx");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Book", function() { return _Book__WEBPACK_IMPORTED_MODULE_8__["Book"]; });
+/* harmony import */ var _bookPage_Book__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./bookPage/Book */ "./app/pages/bookPage/Book.tsx");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Book", function() { return _bookPage_Book__WEBPACK_IMPORTED_MODULE_8__["Book"]; });
 
 /* harmony import */ var _Movie__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./Movie */ "./app/pages/Movie.tsx");
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Movie", function() { return _Movie__WEBPACK_IMPORTED_MODULE_9__["Movie"]; });
@@ -5116,7 +5392,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-react_dom__WEBPACK_IMPORTED_MODULE_1___default.a.render( /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_2__["HashRouter"], null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_app_app__WEBPACK_IMPORTED_MODULE_4__["App"], null)), document.getElementById('root'));
+react_dom__WEBPACK_IMPORTED_MODULE_1___default.a.render( /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_2__["BrowserRouter"], null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_app_app__WEBPACK_IMPORTED_MODULE_4__["App"], null)), document.getElementById('root'));
 
 /***/ }),
 
