@@ -2,6 +2,7 @@ package com.innova.service;
 
 import com.innova.constants.ErrorCodes;
 import com.innova.exception.BadRequestException;
+import com.innova.model.Role;
 import com.innova.model.User;
 import com.innova.repository.UserRepository;
 import com.innova.security.jwt.JwtProvider;
@@ -11,6 +12,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
+import java.util.Set;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -47,6 +51,16 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public boolean existsByUsername(String username) {
+        return userRepository.existsByUsername(username);
+    }
+
+    @Override
+    public Optional<User> findByEmail(String email) {
+        return userRepository.findByEmail(email);
+    }
+
+    @Override
     public User changeEmail(User user, String email) {
         user.setEmail(email);
         user.setEnabled(false);
@@ -77,5 +91,20 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new BadRequestException("No such user", ErrorCodes.NO_SUCH_USER));
         return user;
+    }
+
+    @Override
+    public Optional<User> findUserByUsername(String username) {
+        return userRepository.findByUsername(username);
+    }
+
+    @Override
+    public User saveUser(User user) {
+        return userRepository.save(user);
+    }
+
+    @Override
+    public Optional<User> findUserByRole(Set<Role> roles) {
+        return userRepository.findByRolesIn(roles);
     }
 }
