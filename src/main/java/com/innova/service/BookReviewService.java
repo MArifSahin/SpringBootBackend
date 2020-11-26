@@ -2,6 +2,7 @@ package com.innova.service;
 
 import com.innova.dto.request.EditorReviewForm;
 import com.innova.dto.request.UserReviewForm;
+import com.innova.dto.response.BookReviewResponse;
 import com.innova.dto.response.DashboardBookResponse;
 import com.innova.model.BookReview;
 import com.innova.model.User;
@@ -16,4 +17,6 @@ public interface BookReviewService {
     BookReview saveUserReview(UserReviewForm userReviewForm, User user);
 
     BookReview saveEditorReview(EditorReviewForm editorReviewForm, User user);
+
+    Map<String, BookReviewResponse> getReviewsByUser(User user);
 }

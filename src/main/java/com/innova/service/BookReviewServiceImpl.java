@@ -2,6 +2,7 @@ package com.innova.service;
 
 import com.innova.dto.request.EditorReviewForm;
 import com.innova.dto.request.UserReviewForm;
+import com.innova.dto.response.BookReviewResponse;
 import com.innova.dto.response.DashboardBookResponse;
 import com.innova.model.Book;
 import com.innova.model.BookModes;
@@ -83,8 +84,6 @@ public class BookReviewServiceImpl implements BookReviewService {
             book.setBookModes(bookModes);
             bookRepository.save(book);
         }
-
-
         BookReview bookReview = new BookReview(userReviewForm.getReviewText(),
                 false,
                 LocalDateTime.now(),
@@ -123,5 +122,21 @@ public class BookReviewServiceImpl implements BookReviewService {
                 user);
         bookReviewRepository.save(bookReview);
         return  bookReview;
+    }
+
+    @Override
+    public Map<String,BookReviewResponse> getReviewsByUser(User user) {
+        List<BookReview> bookReviews=bookReviewRepository.findByUser(user);
+        Map<String, BookReviewResponse> bookReviewResponses = new HashMap<>();
+        Iterator<BookReview> itr = bookReviews.iterator();
+        BookReview review;
+        BookReviewResponse bookReviewResponse = null;
+        while (itr.hasNext()) {
+            review = itr.next();
+            bookReviewResponse = new BookReviewResponse(review.getReviewText(), review.getBook().getName(),review.getBook().getId(), review.getScore(), review.getReviewDate());
+            bookReviewResponses.put(review.getBook().getName(), bookReviewResponse);
+        }
+
+        return bookReviewResponses;
     }
 }

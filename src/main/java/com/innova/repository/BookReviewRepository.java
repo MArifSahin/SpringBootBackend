@@ -16,4 +16,5 @@ public interface BookReviewRepository extends JpaRepository<BookReview, Integer>
     List<BookReview> findByOrderByReviewDateDesc();
     BookReview findByBookAndUser(Book book, User user);
     Integer deleteByBookAndUser(Book book, User user);
+    List<BookReview> findByUser(User user);
 }

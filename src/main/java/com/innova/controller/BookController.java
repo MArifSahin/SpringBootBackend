@@ -6,6 +6,7 @@ import com.innova.dto.request.MoodsForm;
 import com.innova.dto.request.UserReviewForm;
 import com.innova.dto.response.BookResponse;
 
+import com.innova.dto.response.BookReviewResponse;
 import com.innova.dto.response.DashboardBookResponse;
 import com.innova.exception.BadRequestException;
 import com.innova.model.*;
@@ -112,4 +113,11 @@ public class BookController {
     public ResponseEntity<Map<String, DashboardBookResponse>> findBookOfMood(@RequestBody MoodsForm moodsForm) {
         return ResponseEntity.ok().body(bookModesService.getBookOfMood(moodsForm));
     }
+
+    @GetMapping("/my-reviews")
+    public ResponseEntity<Map<String, BookReviewResponse>> getUserReviews() {
+        User user = userService.getUserWithAuthentication(SecurityContextHolder.getContext().getAuthentication());
+        return ResponseEntity.ok().body(bookReviewService.getReviewsByUser(user));
+    }
+
 }
