@@ -12,13 +12,12 @@ import com.innova.model.ActiveSessions;
 import com.innova.model.Role;
 import com.innova.model.TokenBlacklist;
 import com.innova.model.User;
-import com.innova.repository.ActiveSessionsRepository;
-import com.innova.repository.RoleRepository;
-import com.innova.repository.TokenBlacklistRepository;
-import com.innova.repository.UserRepository;
 import com.innova.security.jwt.JwtProvider;
 import com.innova.security.services.UserDetailImpl;
-import com.innova.service.UserServiceImpl;
+import com.innova.service.ActiveSessionsService;
+import com.innova.service.RoleService;
+import com.innova.service.TokenBlacklistService;
+import com.innova.service.UserService;
 import com.innova.util.PasswordUtil;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +25,6 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,20 +43,16 @@ public class UserController {
     PasswordEncoder passwordEncoder;
 
     @Autowired
-    UserRepository userRepository;
+    UserService userService;
 
     @Autowired
-    RoleRepository roleRepository;
-
-
-    @Autowired
-    UserServiceImpl userServiceImpl;
+    RoleService roleService;
 
     @Autowired
-    TokenBlacklistRepository tokenBlacklistRepository;
+    TokenBlacklistService tokenBlacklistService;
 
     @Autowired
-    ActiveSessionsRepository activeSessionsRepository;
+    ActiveSessionsService activeSessionsService;
 
     @Autowired
     JwtProvider jwtProvider;
@@ -68,7 +62,7 @@ public class UserController {
 
     @GetMapping("/")
     public ResponseEntity<?> getUser() {
-        UserDetailImpl userDetails = userServiceImpl
+        UserDetailImpl userDetails = userService
                 .getUserDetails(SecurityContextHolder.getContext().getAuthentication());
         return ResponseEntity.ok().body(userDetails);
     }
@@ -76,20 +70,20 @@ public class UserController {
     @PutMapping("/edit")
     @Transactional
     public ResponseEntity<?> editUser(@Valid @RequestBody ChangeForm changeForm) {
-        User user = userServiceImpl.getUserWithAuthentication(SecurityContextHolder.getContext().getAuthentication());
+        User user = userService.getUserWithAuthentication(SecurityContextHolder.getContext().getAuthentication());
         if (changeForm.getEmail() != null && !changeForm.getEmail().equals(user.getEmail())) {
-            if (userServiceImpl.existsByEmail(changeForm.getEmail())) {
+            if (userService.existsByEmail(changeForm.getEmail())) {
                 return new ResponseEntity<String>("Email is already in use!", HttpStatus.BAD_REQUEST);
             }
             Set<ActiveSessions> activeSessionsForUserWithCurrentEmail = user.getActiveSessions();
             user.setActiveSessions(null);
-            userRepository.save(user);
+            userService.saveUser(user);
             for (ActiveSessions activeSession : activeSessionsForUserWithCurrentEmail) {
-                if (activeSessionsRepository.existsById(activeSession.getRefreshToken())) {
-                    activeSessionsRepository.delete(activeSession);
+                if (activeSessionsService.existsById(activeSession.getRefreshToken())) {
+                    activeSessionsService.deleteSession(activeSession);
                 }
             }
-            userServiceImpl.changeEmail(user, changeForm.getEmail());
+            userService.changeEmail(user, changeForm.getEmail());
             System.out.println("I cannot reach here!");
             try {
                 eventPublisher.publishEvent(new OnRegistrationSuccessEvent(user, "/api/auth"));
@@ -97,7 +91,7 @@ public class UserController {
                 throw new ErrorWhileSendingEmailException(re.getMessage());
             }
         }
-        userServiceImpl.editUser(user, changeForm.getName(), changeForm.getLastname(), changeForm.getAge(),
+        userService.editUser(user, changeForm.getName(), changeForm.getLastname(), changeForm.getAge(),
                 changeForm.getPhoneNumber());
         SuccessResponse response = new SuccessResponse(HttpStatus.OK, "User details successfuly changed.");
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
@@ -110,9 +104,9 @@ public class UserController {
         } else {
             TokenBlacklist oldAccessToken = new TokenBlacklist(logoutForm.getAccessToken(), "access token");
             TokenBlacklist oldRefreshToken = new TokenBlacklist(logoutForm.getRefreshToken(), "refresh token");
-            activeSessionsRepository.deleteById(logoutForm.getRefreshToken());
-            tokenBlacklistRepository.save(oldAccessToken);
-            tokenBlacklistRepository.save(oldRefreshToken);
+            activeSessionsService.deleteSessionById(logoutForm.getRefreshToken());
+            tokenBlacklistService.save(oldAccessToken);
+            tokenBlacklistService.save(oldRefreshToken);
             SuccessResponse response = new SuccessResponse(HttpStatus.OK, "Successfully logged out");
             return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
         }
@@ -120,7 +114,7 @@ public class UserController {
 
     @PostMapping("/change-password")
     public ResponseEntity<?> createNewPassword(@RequestBody ChangePasswordForm changePasswordForm) {
-        User user = userServiceImpl.getUserWithAuthentication(SecurityContextHolder.getContext().getAuthentication());
+        User user = userService.getUserWithAuthentication(SecurityContextHolder.getContext().getAuthentication());
         if (!changePasswordForm.checkAllFieldsAreGiven(changePasswordForm)) {
             throw new BadRequestException("All fields should be given", ErrorCodes.REQUIRE_ALL_FIELDS);
         } else {
@@ -133,7 +127,7 @@ public class UserController {
                 if (!PasswordUtil.isValidPassword(changePasswordForm.getNewPassword())) {
                     throw new BadRequestException("Password is not valid", ErrorCodes.PASSWORD_NOT_VALID);
                 }
-                userServiceImpl.setNewPassword(user, changePasswordForm.getNewPassword());
+                userService.setNewPassword(user, changePasswordForm.getNewPassword());
                 SuccessResponse response = new SuccessResponse(HttpStatus.OK, "Password successfully changed");
                 return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
             } else {
@@ -151,14 +145,14 @@ public class UserController {
         } else {
             String token = forgotAndChangePasswordForm.getToken();
             if (token != null && jwtProvider.validateJwtToken(token, "password", request)) {
-                User user = userServiceImpl.getUserByToken(token, "password");
+                User user = userService.getUserByToken(token, "password");
                 if (!forgotAndChangePasswordForm.getNewPassword()
                         .equals(forgotAndChangePasswordForm.getNewPasswordConfirmation())) {
                     throw new BadRequestException("Password fields does not match",
                             ErrorCodes.NEW_PASSWORD_DOES_NOT_MATCH);
                 } else if (forgotAndChangePasswordForm.getNewPassword()
                         .equals(forgotAndChangePasswordForm.getNewPasswordConfirmation())) {
-                    userServiceImpl.setNewPassword(user, forgotAndChangePasswordForm.getNewPassword());
+                    userService.setNewPassword(user, forgotAndChangePasswordForm.getNewPassword());
                     SuccessResponse response = new SuccessResponse(HttpStatus.OK, "Password successfully changed");
                     return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
                 }
@@ -171,7 +165,7 @@ public class UserController {
 
     @GetMapping("/active-sessions")
     public ResponseEntity<?> getAllActiveSessions() {
-        User user = userServiceImpl.getUserWithAuthentication(SecurityContextHolder.getContext().getAuthentication());
+        User user = userService.getUserWithAuthentication(SecurityContextHolder.getContext().getAuthentication());
         Set<ActiveSessions> activeSessionsForUser = user.getActiveSessions();
         return ResponseEntity.ok().body(activeSessionsForUser);
     }
@@ -181,11 +175,11 @@ public class UserController {
                                                @RequestParam("accessToken") String accessToken, HttpServletRequest request) {
         if (refreshToken != null) {
             if (jwtProvider.validateJwtToken(refreshToken, "refresh", request)) {
-                activeSessionsRepository.deleteById(refreshToken);
+                activeSessionsService.deleteSessionById(refreshToken);
                 TokenBlacklist oldRefreshToken = new TokenBlacklist(refreshToken, "refresh token");
                 TokenBlacklist oldAccessToken = new TokenBlacklist(accessToken, "access token");
-                tokenBlacklistRepository.save(oldRefreshToken);
-                tokenBlacklistRepository.save(oldAccessToken);
+                tokenBlacklistService.save(oldRefreshToken);
+                tokenBlacklistService.save(oldAccessToken);
                 SuccessResponse response = new SuccessResponse(HttpStatus.OK,
                         "Successfully logged out from " + refreshToken);
                 return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
@@ -201,12 +195,12 @@ public class UserController {
     public ResponseEntity<?> becomeEditor(@RequestBody EditorApplicationForm applicationForm) {
         try {
             Set<Role> roles = new HashSet<>();;
-            Role role = roleRepository.findById(1).get();
+            Role role = roleService.findById(1).get();
             roles.add(role);
-            User user = userRepository.findByRolesIn(roles)
+            User user = userService.findUserByRole(roles)
                     .orElseThrow(() -> new BadRequestException("User with given role could not found", ErrorCodes.NO_SUCH_USER));
             eventPublisher.publishEvent(new OnEditorApplicationSuccessEvent(user, applicationForm,"/api/auth"));
-            SuccessResponse response = new SuccessResponse(HttpStatus.OK,"Email successfuly sent");
+            SuccessResponse response = new SuccessResponse(HttpStatus.OK,"Form successfuly sent to admin.");
             return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
         }catch (Exception re) {
             throw new ErrorWhileSendingEmailException(re.getMessage());

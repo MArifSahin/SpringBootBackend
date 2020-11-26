@@ -18,13 +18,14 @@ import com.innova.model.Attempt;
 import com.innova.model.Role;
 import com.innova.model.Roles;
 import com.innova.model.User;
-import com.innova.repository.ActiveSessionsRepository;
-import com.innova.repository.AttemptRepository;
-import com.innova.repository.RoleRepository;
-import com.innova.repository.UserRepository;
+
 import com.innova.security.jwt.JwtProvider;
 
 import com.innova.security.services.UserDetailImpl;
+import com.innova.service.ActiveSessionsService;
+import com.innova.service.AttemptService;
+import com.innova.service.RoleService;
+import com.innova.service.UserService;
 import com.innova.util.PasswordUtil;
 
 import io.jsonwebtoken.ExpiredJwtException;
@@ -57,16 +58,16 @@ public class AuthenticationController {
     AuthenticationManager authenticationManager;
 
     @Autowired
-    UserRepository userRepository;
+    ActiveSessionsService activeSessionsService;
 
     @Autowired
-    AttemptRepository attemptRepository;
+    AttemptService attemptService;
 
     @Autowired
-    RoleRepository roleRepository;
+    RoleService roleService;
 
     @Autowired
-    ActiveSessionsRepository activeSessionsRepository;
+    UserService userService;
 
     @Autowired
     PasswordEncoder passwordEncoder;
@@ -90,7 +91,7 @@ public class AuthenticationController {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginForm.getUsername(), loginForm.getPassword()));
 
-        User user = userRepository.findByUsername(loginForm.getUsername())
+        User user = userService.findUserByUsername(loginForm.getUsername())
                 .orElseThrow(() -> new BadRequestException("User with given username could not found", ErrorCodes.NO_SUCH_USER));
 
         if (!user.isEnabled()) {
@@ -105,10 +106,10 @@ public class AuthenticationController {
         List<String> roles = userDetails.getAuthorities().stream().map(item -> item.getAuthority())
                 .collect(Collectors.toList());
 
-        if (attemptRepository.existsByIp(request.getRemoteAddr())) {
-            Attempt attempt = attemptRepository.findById(request.getRemoteAddr()).get();
+        if (attemptService.existsByIp(request.getRemoteAddr())) {
+            Attempt attempt = attemptService.getAttemptById(request.getRemoteAddr()).get();
             attempt.setAttemptCounter(0);
-            attemptRepository.save(attempt);
+            attemptService.saveAttempt(attempt);
         }
 
         String userAgent = request.getHeader("User-Agent") == null ? "Not known" : request.getHeader("User-Agent");
@@ -119,10 +120,10 @@ public class AuthenticationController {
                         ZoneId.systemDefault()));
 
         activeSession.setUser(user);
-        activeSessionsRepository.save(activeSession);
+        activeSessionsService.saveSession(activeSession);
 
         user.addActiveSession(activeSession);
-        userRepository.save(user);
+        userService.saveUser(user);
         return ResponseEntity
                 .ok(new LoginResponse(accessToken, refreshToken, userDetails.getId(), userDetails.getUsername(),
                         userDetails.getEmail(), roles, userDetails.getName(), userDetails.getLastName()));
@@ -130,10 +131,10 @@ public class AuthenticationController {
 
     @PostMapping("sign-up")
     public ResponseEntity<?> registerUser(@Valid @RequestBody SignUpForm signUpForm) {
-        if (userRepository.existsByUsername(signUpForm.getUsername())) {
+        if (userService.existsByUsername(signUpForm.getUsername())) {
             throw new BadRequestException("Username is already taken!", ErrorCodes.USERNAME_ALREADY_TAKEN);
         }
-        if (userRepository.existsByEmail(signUpForm.getEmail())) {
+        if (userService.existsByEmail(signUpForm.getEmail())) {
             throw new BadRequestException("Email is already in use!", ErrorCodes.EMAIL_ALREADY_TAKEN);
         }
 
@@ -144,7 +145,7 @@ public class AuthenticationController {
         User user = new User(signUpForm.getUsername(), signUpForm.getEmail(),
                 passwordEncoder.encode(signUpForm.getPassword()));
         Set<Role> roles = new HashSet<>();
-        Role userRole = roleRepository.findByRole(Roles.ROLE_USER)
+        Role userRole = roleService.findByRole(Roles.ROLE_USER)
                 .orElseThrow(() -> new RuntimeException("Fail! -> Cause: User Role not find."));
         roles.add(userRole);
         user.setRoles(roles);
@@ -152,12 +153,12 @@ public class AuthenticationController {
         user.setEnabled(true);
         userRepository.save(user);
         if(user.getId()==100){
-            userRole = roleRepository.findByRole(Roles.ROLE_ADMIN)
+            userRole = roleService.findByRole(Roles.ROLE_ADMIN)
                     .orElseThrow(() -> new RuntimeException("Fail! -> Cause: User Role not find."));
             roles.clear();
             roles.add(userRole);
             user.setRoles(roles);
-            userRepository.save(user);
+            userService.saveUser(user);
         }
 
         try {
@@ -178,10 +179,10 @@ public class AuthenticationController {
 
         if (token != null && jwtProvider.validateJwtToken(token, "verification", request)) {
             String username = jwtProvider.getSubjectFromJwt(token, "verification");
-            User user = userRepository.findByEmail(username)
+            User user = userService.findByEmail(username)
                     .orElseThrow(() -> new BadRequestException("User with given email could not found", ErrorCodes.NO_SUCH_USER));
             user.setEnabled(true);
-            userRepository.save(user);
+            userService.saveUser(user);
 
             return ResponseEntity.status(HttpStatus.SEE_OTHER).location(URI.create("https://book-review-backend.herokuapp.com/#/mailsuccess"))
                     .build();
@@ -199,9 +200,9 @@ public class AuthenticationController {
         }
         if(isAccepted.equals("true")){
             Set<Role> roles = new HashSet<>();
-            User user = userRepository.findByEmail(email)
+            User user = userService.findByEmail(email)
                     .orElseThrow(() -> new BadRequestException("User with given email could not found", ErrorCodes.NO_SUCH_USER));
-            Role userRole = roleRepository.findByRole(Roles.ROLE_EDITOR)
+            Role userRole = roleService.findByRole(Roles.ROLE_EDITOR)
                     .orElseThrow(() -> new RuntimeException("Fail! -> Cause: User Role not find."));
             roles.add(userRole);
             user.setRoles(roles);
@@ -223,7 +224,7 @@ public class AuthenticationController {
         }
         try {
             String email = jwtProvider.getSubjectFromJwt(token, "refresh");
-            User user = userRepository.findByEmail(email)
+            User user = userService.findByEmail(email)
                     .orElseThrow(() -> new BadRequestException("User with given email could not found", ErrorCodes.NO_SUCH_USER));
             if (!user.isEnabled()) {
                 throw new AccountNotActivatedException("Account has not been activated.");
@@ -232,9 +233,9 @@ public class AuthenticationController {
             if (jwtProvider.validateJwtToken(token, "refresh", request)) {
                 Map<String, Object> response = new HashMap<>();
                 String newAccessToken = jwtProvider.generateJwtToken(userPrincipal);
-                ActiveSessions currentSession = activeSessionsRepository.getOne(token);
-                currentSession.getAccessToken(newAccessToken);
-                activeSessionsRepository.save(currentSession);
+                ActiveSessions currentSession = activeSessionsService.getSessionByToken(token);
+                currentSession.setAccessToken(newAccessToken);
+                activeSessionsService.saveSession(currentSession);
                 response.put("accessToken", newAccessToken);
                 return ResponseEntity.ok(response);
             } else {
@@ -249,7 +250,7 @@ public class AuthenticationController {
     @PostMapping("forgot-password")
     public ResponseEntity<?> forgotPassword(@RequestBody ForgotPasswordForm forgotPasswordForm) {
         String email = forgotPasswordForm.getEmail();
-        if (!userRepository.existsByEmail(email)) {
+        if (!userService.existsByEmail(email)) {
             throw new BadRequestException("User with given email could not found", ErrorCodes.NO_SUCH_USER);
         } else {
             try {
@@ -265,7 +266,7 @@ public class AuthenticationController {
     @GetMapping("send-email")
     public ResponseEntity<?> sendNewEmail(@RequestParam("email") String email) {
         try {
-            User user = userRepository.findByEmail(email)
+            User user = userService.findByEmail(email)
                     .orElseThrow(() -> new BadRequestException("User with given email could not found", ErrorCodes.NO_SUCH_USER));
             eventPublisher.publishEvent(new OnRegistrationSuccessEvent(user, "/api/auth"));
             SuccessResponse response = new SuccessResponse(HttpStatus.OK, "Email successfuly sent");
