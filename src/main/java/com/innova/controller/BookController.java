@@ -5,15 +5,19 @@ import com.innova.dto.request.EditorReviewForm;
 import com.innova.dto.request.MoodsForm;
 import com.innova.dto.request.UserReviewForm;
 import com.innova.dto.response.BookResponse;
-import com.innova.dto.response.BooksOfYourMoodResponse;
-import com.innova.dto.response.LastReviewedBookResponse;
+
+import com.innova.dto.response.DashboardBookResponse;
 import com.innova.exception.BadRequestException;
 import com.innova.model.*;
 import com.innova.repository.BookModesRepository;
 import com.innova.repository.BookRepository;
 import com.innova.repository.BookReviewRepository;
 import com.innova.repository.UserRepository;
-import com.innova.service.UserServiceImpl;
+import com.innova.service.BookModesService;
+import com.innova.service.BookReviewService;
+import com.innova.service.BookService;
+import com.innova.service.UserService;
+
 import com.innova.util.JsonUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -30,12 +34,14 @@ import java.util.*;
 @RestController
 @RequestMapping("api/book")
 public class BookController {
+    @Autowired
+    BookService bookService;
 
     @Autowired
-    BookRepository bookRepository;
+    BookReviewService bookReviewService;
 
     @Autowired
-    UserRepository userRepository;
+    BookModesService bookModesService;
 
     @Autowired
     BookReviewRepository bookReviewRepository;
@@ -44,32 +50,15 @@ public class BookController {
     BookModesRepository bookModesRepository;
 
     @Autowired
-    UserServiceImpl userServiceImpl;
+    UserService userService;
 
     @GetMapping("/{bookId}")
-    public ResponseEntity<?> getBook(@PathVariable String bookId) {
+    public ResponseEntity<BookResponse> getBook(@PathVariable String bookId) {
         if (bookId == null) {
             return ResponseEntity.status(HttpStatus.SEE_OTHER).location(URI.create("https://book-review-backend.herokuapp.com/#/book")).build();
         } else {
-            if (bookRepository.existsById(bookId)) {
-                Book book = bookRepository.findById(bookId).get();
-                Iterator<BookReview> itr = book.getBookReviews().iterator();
-                Map<String, String> userReviews = new HashMap<>();
-                String editorReview = null;
-                String editor = null;
-                while (itr.hasNext()) {
-                    BookReview itrReview = itr.next();
-                    if (itrReview.isEditorReview()) {
-                        editorReview = itrReview.getReviewText();
-                        editor = itrReview.getUser().getUsername();
-                    } else {
-                        userReviews.put(itrReview.getUser().getUsername(), itrReview.getReviewText());
-                    }
-                }
-
-                BookResponse bookResponse = new BookResponse(
-                        book.getId(), book.getName(), book.getEditorScore(), book.getUserScore(), editorReview, editor, userReviews, book.getModes().createMap()
-                );
+            if (bookService.checkBookById(bookId)) {
+                BookResponse bookResponse = bookService.getBookResponseById(bookId);
                 return ResponseEntity.ok().body(bookResponse);
             } else {
                 throw new BadRequestException("No such book", ErrorCodes.NO_SUCH_BOOK);
@@ -79,39 +68,18 @@ public class BookController {
 
     @PostMapping("/write-editor-review")
     public ResponseEntity<?> writeEditorReview(@RequestBody EditorReviewForm editorReviewForm) throws IOException {
-        User user = userServiceImpl.getUserWithAuthentication(SecurityContextHolder.getContext().getAuthentication());
-
+        User user = userService.getUserWithAuthentication(SecurityContextHolder.getContext().getAuthentication());
         if (!user.getRoles().iterator().next().getRole().equals(Roles.ROLE_EDITOR)) {
-            return new ResponseEntity<String>("Only editors can write editor review!", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>("Only editors can write editor review!", HttpStatus.BAD_REQUEST);
         }
         if (editorReviewForm.getBookId() == null) {
             return ResponseEntity.status(HttpStatus.SEE_OTHER).location(URI.create("https://book-review-backend.herokuapp.com/#/book")).build();
         } else {
-            Book book;
-            if (bookRepository.existsById(editorReviewForm.getBookId())) {
-                book = bookRepository.findById(editorReviewForm.getBookId()).get();
-                if (book.hasEditorReview) {
-                    return new ResponseEntity<String>("This book already have an editor review!", HttpStatus.BAD_REQUEST);
-                }
-                book.setEditorScore(editorReviewForm.getEditorScore());
+            if (bookReviewService.saveEditorReview(editorReviewForm, user) == null) {
+                return new ResponseEntity<>("This book already have an editor review!", HttpStatus.BAD_REQUEST);
             } else {
-                book = new Book(editorReviewForm.getBookId(), editorReviewForm.getBookName(), editorReviewForm.getEditorScore(), 0, 0);
-                book.hasEditorReview = true;
-                //TODO get modes
-                BookModes bookModes = new BookModes(editorReviewForm.getMoods());
-                bookModes.setBook(book);
-                book.setBookModes(bookModes);
-                bookRepository.save(book);
+                return ResponseEntity.ok().body(bookReviewService.saveEditorReview(editorReviewForm, user));
             }
-
-            BookReview bookReview = new BookReview(editorReviewForm.getReviewText(),
-                    true,
-                    LocalDateTime.now(),
-                    editorReviewForm.getEditorScore(),
-                    book,
-                    user);
-            bookReviewRepository.save(bookReview);
-            return ResponseEntity.ok().body(bookReview);
         }
     }
 
@@ -121,96 +89,27 @@ public class BookController {
         if (userReviewForm.getBookId() == null) {
             return ResponseEntity.status(HttpStatus.SEE_OTHER).location(URI.create("https://book-review-backend.herokuapp.com/#/book")).build();
         } else {
-            Book book;
-            if (bookRepository.existsById(userReviewForm.getBookId())) {
-                book = bookRepository.findById(userReviewForm.getBookId()).get();
-                int newScore = (book.getUserScore() * book.getReviewNumber() + userReviewForm.getUserScore()) / (book.getReviewNumber() + 1);
-                book.setUserScore(newScore);
-                book.setReviewNumber(book.getReviewNumber() + 1);
-            } else {
-                book = new Book(userReviewForm.getBookId(), userReviewForm.getBookName(), 0, userReviewForm.getUserScore(), 1);
-                book.hasUserReview = true;
-                BookModes bookModes = new BookModes();
-                bookModes.setBook(book);
-                book.setBookModes(bookModes);
-                bookRepository.save(book);
-            }
-
-            BookReview bookReview = new BookReview(userReviewForm.getReviewText(),
-                    false,
-                    LocalDateTime.now(),
-                    userReviewForm.getUserScore(),
-                    book,
-                    user);
-            bookReviewRepository.save(bookReview);
-            return ResponseEntity.ok().body(bookReview);
+            return ResponseEntity.ok().body(bookReviewService.saveUserReview(userReviewForm, user));
         }
     }
 
     @GetMapping("/last-reviews")
-    public ResponseEntity<Map<String, LastReviewedBookResponse>> lastReviews() {
-        List<BookReview> reviews = bookReviewRepository.findByOrderByReviewDateDesc();
-        Map<String, LastReviewedBookResponse> bookReviews = new HashMap<>();
-        Iterator<BookReview> itr = reviews.iterator();
-        BookReview review;
-        int length = 0;
-        LastReviewedBookResponse lastReviewedBookResponse = null;
-        while (itr.hasNext() && length < 5) {
-            review = itr.next();
-            if (!bookReviews.containsKey(review.getBook().getName())) {
-                lastReviewedBookResponse = new LastReviewedBookResponse(review.getBook().getId(),
-                        review.getBook().getEditorScore(),
-                        review.getBook().getUserScore(),
-                        review.getBook().getEditorReview().getValue().toString(),
-                        review.getBook().getEditorReview().getKey().toString());
-                bookReviews.put(review.getBook().getName(), lastReviewedBookResponse);
-                length++;
-            }
-        }
-        return ResponseEntity.ok().body(bookReviews);
+    public ResponseEntity<Map<String, DashboardBookResponse>> lastReviews() {
+        return ResponseEntity.ok().body(bookReviewService.getLatestReviews());
     }
 
     @GetMapping("/highest-rated")
-    public ResponseEntity<Map<String, Integer>> highestRated() {
-        List<Book> books = bookRepository.findAllByOrderByUserScoreDesc();
-
-        Map<String, Integer> highestRatedBooks = new LinkedHashMap<>();
-        Iterator<Book> itr = books.iterator();
-        int length = 0;
-        while (itr.hasNext() && length < 5) {
-            Book book = itr.next();
-            highestRatedBooks.put(book.getName(), book.getUserScore());
-            length++;
-        }
-        return ResponseEntity.ok().body(highestRatedBooks);
+    public ResponseEntity<Map<String, DashboardBookResponse>> highestRated() {
+        return ResponseEntity.ok().body(bookService.getBooksByEditorScoreDesc());
     }
 
     @GetMapping("/highest-reviewed")
-    public ResponseEntity<Map<String, Integer>> highestReviewed() {
-        List<Book> books = bookRepository.findAllByOrderByReviewNumberDesc();
-
-        Map<String, Integer> highestReviewedBooks = new LinkedHashMap<>();
-        Iterator<Book> itr = books.iterator();
-        int length = 0;
-        while (itr.hasNext() && length < 5) {
-            Book book = itr.next();
-            highestReviewedBooks.put(book.getName(), book.getReviewNumber());
-            length++;
-        }
-        return ResponseEntity.ok().body(highestReviewedBooks);
+    public ResponseEntity<Map<String, DashboardBookResponse>> highestReviewed() {
+        return ResponseEntity.ok().body(bookService.getBooksByReviewNumberDesc());
     }
 
     @PostMapping("/find-book-of-mood")
-    public ResponseEntity<List<BooksOfYourMoodResponse>> findBookOfMood(@RequestBody MoodsForm moodsForm) {
-        System.out.println(moodsForm);
-        List<BookModes> bookModes = bookModesRepository.findAllBooksByModes(moodsForm.getDrama(),
-                moodsForm.getFun(), moodsForm.getAction(), moodsForm.getAdventure(), moodsForm.getRomance(), moodsForm.getThriller(), moodsForm.getHorror());
-        Iterator<BookModes> iterator = bookModes.iterator();
-        List<BooksOfYourMoodResponse> booksOfYourMood = new ArrayList<>();
-        while (iterator.hasNext()) {
-            Book book = iterator.next().getBook();
-            booksOfYourMood.add(new BooksOfYourMoodResponse(book.getId(), book.getName(), book.getEditorScore(), book.getUserScore()));
-        }
-        return ResponseEntity.ok().body(booksOfYourMood);
+    public ResponseEntity<Map<String, DashboardBookResponse>> findBookOfMood(@RequestBody MoodsForm moodsForm) {
+        return ResponseEntity.ok().body(bookModesService.getBookOfMood(moodsForm));
     }
 }

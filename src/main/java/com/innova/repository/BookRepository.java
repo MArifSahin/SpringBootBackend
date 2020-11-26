@@ -9,6 +9,7 @@ import java.util.List;
 @Repository
 public interface BookRepository extends JpaRepository<Book, String> {
     List<Book> findAllByOrderByUserScoreDesc();
+    List<Book> findAllByOrderByEditorScoreDesc();
     List<Book> findAllByOrderByReviewNumberDesc();
 
 }

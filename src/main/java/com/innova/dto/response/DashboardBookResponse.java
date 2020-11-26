@@ -2,19 +2,36 @@ package com.innova.dto.response;
 
 import java.util.AbstractMap;
 
-public class LastReviewedBookResponse {
+public class DashboardBookResponse {
     private int editorScore;
     private int userScore;
     private String editorReview;
     private String editor;
     private String bookId;
+    private int reviewNumber;
 
-    public LastReviewedBookResponse(String bookId, int editorScore, int userScore, String editorReview, String editor) {
+    public DashboardBookResponse(String bookId, int editorScore, int userScore, String editorReview, String editor) {
         this.bookId = bookId;
         this.editorScore = editorScore;
         this.userScore = userScore;
         this.editorReview = editorReview;
         this.editor = editor;
+    }
+
+    public DashboardBookResponse(int editorScore, String bookId) {
+        this.editorScore = editorScore;
+        this.bookId = bookId;
+    }
+
+    public DashboardBookResponse(String bookId, int reviewNumber) {
+        this.bookId = bookId;
+        this.reviewNumber = reviewNumber;
+    }
+
+    public DashboardBookResponse(int editorScore, int userScore, String bookId) {
+        this.editorScore = editorScore;
+        this.userScore = userScore;
+        this.bookId = bookId;
     }
 
     public int getEditorScore() {
@@ -55,5 +72,13 @@ public class LastReviewedBookResponse {
 
     public void setBookId(String bookId) {
         this.bookId = bookId;
+    }
+
+    public int getReviewNumber() {
+        return reviewNumber;
+    }
+
+    public void setReviewNumber(int reviewNumber) {
+        this.reviewNumber = reviewNumber;
     }
 }
