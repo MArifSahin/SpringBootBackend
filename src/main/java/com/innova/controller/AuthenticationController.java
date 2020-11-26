@@ -151,7 +151,7 @@ public class AuthenticationController {
         user.setRoles(roles);
         //TODO correct after heroku deploy
         user.setEnabled(true);
-        userRepository.save(user);
+        userService.saveUser(user);
         if(user.getId()==100){
             userRole = roleService.findByRole(Roles.ROLE_ADMIN)
                     .orElseThrow(() -> new RuntimeException("Fail! -> Cause: User Role not find."));
@@ -206,7 +206,7 @@ public class AuthenticationController {
                     .orElseThrow(() -> new RuntimeException("Fail! -> Cause: User Role not find."));
             roles.add(userRole);
             user.setRoles(roles);
-            userRepository.save(user);
+            userService.saveUser(user);
             return ResponseEntity.status(HttpStatus.SEE_OTHER).location(URI.create("https://book-review-backend.herokuapp.com")).build();
             //TODO kullaniciya editor oldugunu bildir ve success sayfasi
         }

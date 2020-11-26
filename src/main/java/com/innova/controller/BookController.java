@@ -85,7 +85,7 @@ public class BookController {
 
     @PostMapping("/write-user-review")
     public ResponseEntity<?> writeUserReview(@RequestBody UserReviewForm userReviewForm) {
-        User user = userServiceImpl.getUserWithAuthentication(SecurityContextHolder.getContext().getAuthentication());
+        User user = userService.getUserWithAuthentication(SecurityContextHolder.getContext().getAuthentication());
         if (userReviewForm.getBookId() == null) {
             return ResponseEntity.status(HttpStatus.SEE_OTHER).location(URI.create("https://book-review-backend.herokuapp.com/#/book")).build();
         } else {
