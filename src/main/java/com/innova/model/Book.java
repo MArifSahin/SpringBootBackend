@@ -44,7 +44,7 @@ public class Book {
     @Column(name = "review_number")
     private int reviewNumber;
 
-    @OneToMany(mappedBy = "book")
+    @OneToMany(mappedBy = "book", fetch = FetchType.LAZY, orphanRemoval = true)
     @JsonManagedReference
     private Set<BookReview> bookReviews = new HashSet<>();
 

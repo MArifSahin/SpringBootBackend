@@ -58,18 +58,18 @@ public class User {
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
-    private Set<Role> roles = new HashSet<Role>();
+    private Set<Role> roles = new HashSet<>();
 
     @OneToMany(mappedBy = "user")
     @JsonManagedReference
     private Set<ActiveSessions> activeSessions = new HashSet<>();
     ;
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user",fetch = FetchType.LAZY, orphanRemoval = true)
     @JsonManagedReference
     private Set<BookReview> bookReviews = new HashSet<>();
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JsonManagedReference
     private Set<MovieReview> movieReviews = new HashSet<>();
 

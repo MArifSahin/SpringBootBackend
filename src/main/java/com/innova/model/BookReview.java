@@ -30,12 +30,12 @@ public class BookReview {
     @Column(name = "score")
     private int score;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "book_id", nullable = false)
     @JsonBackReference
     private Book book;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id", nullable = false)
     @JsonBackReference
     private User user;

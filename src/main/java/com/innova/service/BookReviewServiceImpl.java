@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -62,9 +63,18 @@ public class BookReviewServiceImpl implements BookReviewService {
         Book book;
         if (bookRepository.existsById(userReviewForm.getBookId())) {
             book = bookRepository.findById(userReviewForm.getBookId()).get();
-            int newScore = (book.getUserScore() * book.getReviewNumber() + userReviewForm.getUserScore()) / (book.getReviewNumber() + 1);
-            book.setUserScore(newScore);
-            book.setReviewNumber(book.getReviewNumber() + 1);
+            if(bookReviewRepository.existsByBookAndUser(book, user)){
+                BookReview deletedReview = bookReviewRepository.findByBookAndUser(book, user);
+                int deletedUserScore = deletedReview.getScore();
+                bookReviewRepository.deleteById(deletedReview.getId());
+                int newScore = (book.getUserScore() * book.getReviewNumber()-deletedUserScore+ userReviewForm.getUserScore()) / (book.getReviewNumber());
+                book.setUserScore(newScore);
+            }
+            else {
+                int newScore = (book.getUserScore() * book.getReviewNumber() + userReviewForm.getUserScore()) / (book.getReviewNumber() + 1);
+                book.setUserScore(newScore);
+                book.setReviewNumber(book.getReviewNumber() + 1);
+            }
         } else {
             book = new Book(userReviewForm.getBookId(), userReviewForm.getBookName(), 0, userReviewForm.getUserScore(), 1);
             book.hasUserReview = true;
@@ -73,9 +83,7 @@ public class BookReviewServiceImpl implements BookReviewService {
             book.setBookModes(bookModes);
             bookRepository.save(book);
         }
-        if(bookReviewRepository.findByBookAndUser(book, user).size() > 0){
-            bookReviewRepository.deleteByBookAndUser(book,user);
-        }
+
 
         BookReview bookReview = new BookReview(userReviewForm.getReviewText(),
                 false,
@@ -83,7 +91,9 @@ public class BookReviewServiceImpl implements BookReviewService {
                 userReviewForm.getUserScore(),
                 book,
                 user);
+        book.addBookReview(bookReview);
         bookReviewRepository.save(bookReview);
+
         return bookReview;
     }
 
