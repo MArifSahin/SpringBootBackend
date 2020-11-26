@@ -53,7 +53,7 @@ public class ActiveSessions {
         return this.accessToken;
     }
 
-    public void getAccessToken(String accessToken){
+    public void setAccessToken(String accessToken){
         this.accessToken = accessToken;
     }
 
