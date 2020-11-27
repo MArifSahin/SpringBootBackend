@@ -37,7 +37,7 @@ innova:
     jwtSecretForVerification: Iamhereforverification
     jwtSecretForRefreshToken: Youshallnotpass
     jtwSecretForPassword: Iamsoosecret
-    jwtAccessTokenExpiration: 1800000
+    jwtAccessTokenExpiration: 18000000000000
     jwtRefreshTokenExpiration: 2592000000
     jwtVerificationTokenExpiration: 21600000
     jwtPasswordTokenExpiration: 1800000
